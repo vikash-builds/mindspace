@@ -65,13 +65,23 @@ db.exec(`
     FOREIGN KEY (checklist_id) REFERENCES checklists(id) ON DELETE CASCADE
   );
 
+  CREATE TABLE IF NOT EXISTS chats (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
   CREATE TABLE IF NOT EXISTS chat_history (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    chat_id INTEGER,
     user_id TEXT NOT NULL,
     role TEXT NOT NULL, -- 'user' or 'assistant'
     content TEXT NOT NULL,
     source_chunks TEXT, -- JSON array of source chunks if role is assistant
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (chat_id) REFERENCES chats(id) ON DELETE CASCADE
   );
 `);
 

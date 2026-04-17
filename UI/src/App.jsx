@@ -84,6 +84,14 @@ function App() {
           } 
         />
         <Route 
+          path="/chat/:chatId" 
+          element={
+            <SignedIn>
+              <EnsureProfile><Dashboard /></EnsureProfile>
+            </SignedIn>
+          } 
+        />
+        <Route 
           path="/documents" 
           element={
             <SignedIn>

@@ -18,6 +18,12 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error('Global Error Handler:', err.stack);
+  res.status(err.statusCode || 500).json({ error: err.message });
+});
+
 const { startScheduler } = require('./services/scheduler');
 
 app.listen(config.PORT, () => {

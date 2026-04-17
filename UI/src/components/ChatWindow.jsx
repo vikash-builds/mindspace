@@ -4,8 +4,11 @@ import { useAuth } from '@clerk/clerk-react';
 import { Box, TextField, IconButton, Typography, CircularProgress, Paper, Avatar } from '@mui/material';
 import { Send as SendIcon, AutoAwesome as SparklesIcon } from '@mui/icons-material';
 import MessageBubble from './MessageBubble';
+import { useParams, useNavigate } from 'react-router-dom';
 
 function ChatWindow() {
+  const { chatId } = useParams();
+  const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -13,9 +16,18 @@ function ChatWindow() {
   const { getToken } = useAuth();
 
   const fetchHistory = async () => {
+    if (!chatId) {
+      setMessages([]);
+      return;
+    }
+    if (chatId === 'temp') {
+      setMessages([]);
+      return;
+    }
+
     try {
       const token = await getToken();
-      const res = await axios.get('/api/chat/history', {
+      const res = await axios.get(`/api/chat/history/${chatId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setMessages(res.data);
@@ -26,7 +38,7 @@ function ChatWindow() {
 
   useEffect(() => {
     fetchHistory();
-  }, []);
+  }, [chatId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -43,7 +55,7 @@ function ChatWindow() {
 
     try {
       const token = await getToken();
-      const res = await axios.post('/api/chat', { question: input }, {
+      const res = await axios.post('/api/chat', { question: input, chatId: chatId }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setMessages(prev => [...prev, { 
@@ -51,6 +63,11 @@ function ChatWindow() {
         content: res.data.answer,
         source_chunks: JSON.stringify(res.data.sourceChunks)
       }]);
+      
+      // If it was a new chat, update URL with returned chatId
+      if (!chatId && res.data.chatId && res.data.chatId !== 'temp') {
+        navigate(`/chat/${res.data.chatId}`);
+      }
     } catch (err) {
       console.error('Chat error:', err);
     } finally {
@@ -75,10 +92,12 @@ function ChatWindow() {
               <SparklesIcon sx={{ fontSize: 32 }} />
             </Avatar>
             <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
-              How can I help you today?
+              {chatId === 'temp' ? 'Temporary Chat' : 'How can I help you today?'}
             </Typography>
             <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 400 }}>
-              Ask anything about your documents or set reminders for your upcoming tasks.
+              {chatId === 'temp' 
+                ? 'Messages in this session are not saved to history. Ask anything privately.'
+                : "Ask anything about your documents or set reminders for your upcoming tasks."}
             </Typography>
           </Box>
         )}

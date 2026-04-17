@@ -20,8 +20,11 @@ router.post('/', auth, (req, res) => {
   const user_id = req.auth.userId;
   const { email, name, profession, chunk_size, chunk_overlap, top_k, temperature, similarity_threshold } = req.body;
 
-  if (!email || !name || !profession) {
-    return res.status(400).json({ error: 'Email, name and profession are required' });
+  console.log("Profile request received:", { user_id, body: req.body });
+
+  if (!name || !profession) {
+    console.error("Validation failed:", { name, profession });
+    return res.status(400).json({ error: 'Name and profession are required' });
   }
 
   try {
@@ -34,7 +37,7 @@ router.post('/', auth, (req, res) => {
           chunk_size = ?, chunk_overlap = ?, top_k = ?, 
           temperature = ?, similarity_threshold = ?
         WHERE user_id = ?
-      `).run(email, name, profession, chunk_size, chunk_overlap, top_k, temperature, similarity_threshold, user_id);
+      `).run(email || '', name, profession, chunk_size, chunk_overlap, top_k, temperature, similarity_threshold, user_id);
     } else {
       db.prepare(`
         INSERT INTO profiles (
@@ -42,11 +45,12 @@ router.post('/', auth, (req, res) => {
           chunk_size, chunk_overlap, top_k, 
           temperature, similarity_threshold
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `).run(user_id, email, name, profession, chunk_size, chunk_overlap, top_k, temperature, similarity_threshold);
+      `).run(user_id, email || '', name, profession, chunk_size, chunk_overlap, top_k, temperature, similarity_threshold);
     }
     
     res.json({ message: 'Profile saved successfully' });
   } catch (err) {
+    console.error("Profile save error:", err.message);
     res.status(500).json({ error: err.message });
   }
 });
