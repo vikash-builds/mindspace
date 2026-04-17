@@ -65,32 +65,43 @@ function FileUploader({ onUploadSuccess }) {
 
   return (
     <Paper 
-      variant="outlined"
       sx={{ 
         p: 4, 
         textAlign: 'center', 
         borderStyle: 'dashed', 
         borderWidth: 2,
-        borderColor: status === 'error' ? 'error.main' : 'primary.light',
-        bgcolor: 'rgba(99, 102, 241, 0.02)',
-        borderRadius: 4
+        borderColor: status === 'error' ? 'rgba(255, 86, 48, 0.3)' : 'rgba(145, 158, 171, 0.2)',
+        bgcolor: '#212b36',
+        borderRadius: 3,
+        transition: 'border-color 0.2s',
+        '&:hover': {
+          borderColor: status === 'error' ? 'rgba(255, 86, 48, 0.5)' : 'rgba(0, 230, 138, 0.4)',
+        },
       }}
     >
       {status === 'success' ? (
         <Box sx={{ py: 2 }}>
-           <CheckIcon color="success" sx={{ fontSize: 48, mb: 2 }} />
-           <Typography variant="h6" color="success.main" sx={{ fontWeight: 700 }}>
+           <CheckIcon sx={{ fontSize: 48, mb: 2, color: '#22c55e' }} />
+           <Typography variant="h6" sx={{ fontWeight: 700, color: '#22c55e' }}>
              {message}
            </Typography>
         </Box>
       ) : (
         <Box component="form" onSubmit={handleUpload}>
           <Box sx={{ mb: 3 }}>
-            <Avatar sx={{ width: 48, height: 48, bgcolor: 'primary.light', mx: 'auto', mb: 2 }}>
-              <UploadIcon />
+            <Avatar sx={{ 
+              width: 48, 
+              height: 48, 
+              bgcolor: 'rgba(0, 230, 138, 0.12)', 
+              mx: 'auto', 
+              mb: 2 
+            }}>
+              <UploadIcon sx={{ color: '#00e68a' }} />
             </Avatar>
             <Typography variant="h6" sx={{ fontWeight: 700 }}>Upload Knowledge</Typography>
-            <Typography variant="body2" color="text.secondary">PDF, Word, Excel, PowerPoint or Text files</Typography>
+            <Typography variant="body2" sx={{ color: '#919eab' }}>
+              PDF, Word, Excel, PowerPoint or Text files
+            </Typography>
           </Box>
           
           <Box sx={{ mb: 3, maxWidth: 400, mx: 'auto', position: 'relative' }}>
@@ -98,33 +109,27 @@ function FileUploader({ onUploadSuccess }) {
               type="file" 
               onChange={handleFileChange} 
               disabled={uploading}
-              style={{ 
-                position: 'absolute', 
-                inset: 0, 
-                width: '100%', 
-                height: '100%', 
-                opacity: 0, 
-                cursor: 'pointer' 
-              }}
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
             />
             <Box sx={{ 
               py: 1.5, 
               px: 3, 
-              bgcolor: '#fff', 
-              border: '1px solid #e5e7eb', 
-              borderRadius: 3,
-              fontSize: '0.875rem',
-              color: file ? 'text.primary' : 'text.secondary',
+              bgcolor: '#1a222c', 
+              border: '1px solid rgba(145, 158, 171, 0.16)', 
+              borderRadius: 2,
+              color: file ? '#fff' : '#637381',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: 1
+              gap: 1,
+              transition: 'border-color 0.2s',
+              '&:hover': { borderColor: 'rgba(145, 158, 171, 0.32)' },
             }}>
               <Typography noWrap variant="body2" sx={{ fontWeight: 500 }}>
                 {file ? file.name : "Select a file..."}
               </Typography>
               {file && !uploading && (
-                <IconButton size="small" onClick={(e) => { e.stopPropagation(); setFile(null); }}>
+                <IconButton size="small" onClick={(e) => { e.stopPropagation(); setFile(null); }} sx={{ color: '#637381' }}>
                   <XIcon fontSize="inherit" />
                 </IconButton>
               )}
@@ -143,7 +148,7 @@ function FileUploader({ onUploadSuccess }) {
             size="large"
             disabled={!file || uploading}
             startIcon={uploading ? <CircularProgress size={20} color="inherit" /> : null}
-            sx={{ px: 6, borderRadius: 3 }}
+            sx={{ px: 5 }}
           >
             {uploading ? 'Processing...' : 'Begin Indexing'}
           </Button>

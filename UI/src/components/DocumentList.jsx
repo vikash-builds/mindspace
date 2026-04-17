@@ -45,23 +45,23 @@ function DocumentList({ documents, onDeleted }) {
 
   const getFileIcon = (type) => {
     const t = type.toLowerCase();
-    if (t === 'pdf') return <PdfIcon sx={{ color: '#ef4444' }} />;
-    if (t === 'xlsx' || t === 'xls') return <ExcelIcon sx={{ color: '#166534' }} />;
-    if (t === 'pptx' || t === 'ppt') return <PptIcon sx={{ color: '#f97316' }} />;
-    if (t === 'docx' || t === 'doc') return <WordIcon sx={{ color: '#2563eb' }} />;
-    return <FileIcon sx={{ color: '#64748b' }} />;
+    if (t === 'pdf') return <PdfIcon sx={{ color: '#ff5630' }} />;
+    if (t === 'xlsx' || t === 'xls') return <ExcelIcon sx={{ color: '#22c55e' }} />;
+    if (t === 'pptx' || t === 'ppt') return <PptIcon sx={{ color: '#ffab00' }} />;
+    if (t === 'docx' || t === 'doc') return <WordIcon sx={{ color: '#00b8d9' }} />;
+    return <FileIcon sx={{ color: '#637381' }} />;
   };
 
   return (
-    <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #e5e7eb', borderRadius: 3, overflow: 'hidden' }}>
+    <TableContainer component={Paper} elevation={0} sx={{ overflow: 'hidden' }}>
       <Table sx={{ minWidth: 650 }}>
-        <TableHead sx={{ bgcolor: 'rgba(0,0,0,0.02)' }}>
+        <TableHead>
           <TableRow>
-            <TableCell sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', fontSize: '0.75rem' }}>Document</TableCell>
-            <TableCell sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', fontSize: '0.75rem' }}>Status</TableCell>
-            <TableCell sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', fontSize: '0.75rem' }}>Chunks</TableCell>
-            <TableCell sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', fontSize: '0.75rem' }}>Date</TableCell>
-            <TableCell align="right" sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', fontSize: '0.75rem' }}>Action</TableCell>
+            <TableCell>Document</TableCell>
+            <TableCell>Status</TableCell>
+            <TableCell>Chunks</TableCell>
+            <TableCell>Date</TableCell>
+            <TableCell align="right">Action</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -69,34 +69,34 @@ function DocumentList({ documents, onDeleted }) {
             <TableRow key={doc.id} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
               <TableCell>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Avatar variant="rounded" sx={{ bgcolor: 'rgba(0,0,0,0.04)', color: 'inherit' }}>
+                  <Avatar variant="rounded" sx={{ bgcolor: '#2a3544', color: 'inherit' }}>
                     {getFileIcon(doc.file_type)}
                   </Avatar>
                   <Box>
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>{doc.filename}</Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase' }}>{doc.file_type}</Typography>
+                    <Typography variant="caption" sx={{ textTransform: 'uppercase', color: '#637381' }}>{doc.file_type}</Typography>
                   </Box>
                 </Box>
               </TableCell>
               <TableCell>
                 {doc.status === 'ready' ? (
-                  <Chip size="small" icon={<CheckIcon />} label="Ready" color="success" variant="soft" sx={{ fontWeight: 700, bgcolor: '#dcfce7', color: '#166534' }} />
+                  <Chip size="small" icon={<CheckIcon />} label="Ready" sx={{ fontWeight: 600, bgcolor: 'rgba(34, 197, 94, 0.12)', color: '#77ed8b', '& .MuiChip-icon': { color: '#22c55e' } }} />
                 ) : doc.status === 'processing' ? (
-                  <Chip size="small" icon={<ClockIcon />} label="Analyzing..." color="info" sx={{ fontWeight: 700, bgcolor: '#dbeafe', color: '#1e40af' }} />
+                  <Chip size="small" icon={<ClockIcon />} label="Analyzing..." sx={{ fontWeight: 600, bgcolor: 'rgba(0, 184, 217, 0.12)', color: '#61f3f3', '& .MuiChip-icon': { color: '#00b8d9' } }} />
                 ) : (
-                  <Chip size="small" icon={<AlertIcon />} label="Error" color="error" sx={{ fontWeight: 700, bgcolor: '#fee2e2', color: '#991b1b' }} />
+                  <Chip size="small" icon={<AlertIcon />} label="Error" sx={{ fontWeight: 600, bgcolor: 'rgba(255, 86, 48, 0.12)', color: '#ffac82', '& .MuiChip-icon': { color: '#ff5630' } }} />
                 )}
               </TableCell>
               <TableCell>
                 <Typography variant="body2" sx={{ fontWeight: 500 }}>{doc.chunk_count || 0}</Typography>
               </TableCell>
               <TableCell>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body2" sx={{ color: '#919eab' }}>
                   {new Date(doc.uploaded_at).toLocaleDateString()}
                 </Typography>
               </TableCell>
               <TableCell align="right">
-                <IconButton size="small" color="error" onClick={() => handleDelete(doc.id)}>
+                <IconButton size="small" onClick={() => handleDelete(doc.id)} sx={{ color: '#637381', '&:hover': { color: '#ff5630', bgcolor: 'rgba(255, 86, 48, 0.08)' } }}>
                   <TrashIcon fontSize="small" />
                 </IconButton>
               </TableCell>
@@ -105,8 +105,8 @@ function DocumentList({ documents, onDeleted }) {
           {documents.length === 0 && (
             <TableRow>
               <TableCell colSpan={5} align="center" sx={{ py: 8 }}>
-                <Box sx={{ color: 'text.disabled' }}>
-                  <FileIcon sx={{ fontSize: 48, mb: 2, opacity: 0.5 }} />
+                <Box sx={{ color: '#637381' }}>
+                  <FileIcon sx={{ fontSize: 48, mb: 2, opacity: 0.4 }} />
                   <Typography variant="body2">No documents found in your library.</Typography>
                 </Box>
               </TableCell>

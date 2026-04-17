@@ -1,48 +1,152 @@
-* {
+/* ============================================================
+   MindSpace — Glassmorphic Dark Theme (Minimal UI Inspired)
+   ============================================================ */
+
+/* --- Reset & Base --- */
+*, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
+:root {
+  /* Core palette */
+  --bg-deepest: #161c24;
+  --bg-deep: #212b36;
+  --bg-card: #212b36;
+  --bg-surface: rgba(255, 255, 255, 0.04);
+  --bg-elevated: rgba(255, 255, 255, 0.06);
+  --bg-hover: rgba(255, 255, 255, 0.08);
+  
+  --border-subtle: rgba(145, 158, 171, 0.16);
+  --border-hover: rgba(145, 158, 171, 0.28);
+  
+  --text-primary: #ffffff;
+  --text-secondary: #919eab;
+  --text-disabled: rgba(145, 158, 171, 0.5);
+  
+  --primary: #00e68a;
+  --primary-darker: #00ab66;
+  --primary-lighter: rgba(0, 230, 138, 0.16);
+  --primary-glow: rgba(0, 230, 138, 0.24);
+  
+  --secondary: #8b5cf6;
+  --secondary-lighter: rgba(139, 92, 246, 0.16);
+
+  --glass-blur: blur(20px);
+  --glass-bg: rgba(33, 43, 54, 0.8);
+  --glass-border: rgba(145, 158, 171, 0.12);
+  --radius: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+}
+
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Inter', -apple-system, sans-serif;
-  background-color: #f9fafb;
+  font-family: 'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg-deepest);
+  color: var(--text-primary);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Subtle gradient backdrop */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: 
+    radial-gradient(ellipse 60% 50% at 5% 95%, rgba(0, 230, 138, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 60% at 90% 10%, rgba(99, 102, 241, 0.05) 0%, transparent 45%),
+    radial-gradient(ellipse 40% 40% at 50% 50%, rgba(139, 92, 246, 0.04) 0%, transparent 50%);
+  pointer-events: none;
 }
 
 #root {
   min-height: 100vh;
 }
 
+/* --- Scrollbar --- */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(145, 158, 171, 0.2);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(145, 158, 171, 0.36);
+}
+
+/* --- Markdown Content --- */
 .markdown-content h1, .markdown-content h2, .markdown-content h3 {
   margin-bottom: 8px;
   margin-top: 12px;
   font-size: 1.1em;
+  color: var(--text-primary);
 }
 .markdown-content p {
   margin-bottom: 8px;
+  line-height: 1.7;
+  color: var(--text-primary);
 }
 .markdown-content ul, .markdown-content ol {
   margin-left: 20px;
   margin-bottom: 8px;
 }
 .markdown-content code {
-  background: rgba(0,0,0,0.05);
-  padding: 2px 4px;
-  border-radius: 4px;
-  font-family: monospace;
+  background: rgba(145, 158, 171, 0.12);
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.88em;
+  color: #5be49b;
+}
+.markdown-content pre {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  padding: 16px;
+  overflow-x: auto;
+  margin: 12px 0;
+}
+.markdown-content pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #e2e8f0;
 }
 .markdown-content blockquote {
-  border-left: 3px solid #ccc;
-  padding-left: 10px;
-  color: #666;
+  border-left: 3px solid var(--primary);
+  padding-left: 12px;
+  color: var(--text-secondary);
+  margin: 12px 0;
+}
+.markdown-content a {
+  color: var(--primary);
+  text-decoration: none;
+}
+.markdown-content a:hover {
+  text-decoration: underline;
 }
 
+/* --- Auth Page --- */
 .auth-page {
   display: flex;
   align-items: center;
   justify-content: center;
   height: 100vh;
-  background: #f5f5f5;
+  background: var(--bg-deepest);
+}
+
+/* --- Selection --- */
+::selection {
+  background: rgba(0, 230, 138, 0.25);
+  color: #fff;
 }

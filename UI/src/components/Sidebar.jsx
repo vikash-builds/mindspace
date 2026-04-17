@@ -88,26 +88,26 @@ function Sidebar() {
         '& .MuiDrawer-paper': {
           width: drawerWidth,
           boxSizing: 'border-box',
-          borderRight: '1px solid #e5e7eb',
-          backgroundColor: '#f9fafb',
         },
       }}
     >
-      <Box sx={{ p: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+      {/* Logo */}
+      <Box sx={{ p: 2.5, display: 'flex', alignItems: 'center', gap: 1.5 }}>
         <Box sx={{ 
-          bgcolor: 'primary.main', 
-          p: 1, 
-          borderRadius: 1, 
+          bgcolor: '#00e68a', 
+          p: 0.8, 
+          borderRadius: 1.5, 
           display: 'flex', 
-          color: '#fff' 
+          color: '#161c24',
         }}>
-          <BrainIcon />
+          <BrainIcon fontSize="small" />
         </Box>
-        <Typography variant="h6" sx={{ fontWeight: 800, color: 'text.primary', letterSpacing: '-0.025em' }}>
+        <Typography variant="h6" sx={{ fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.02em' }}>
           MindSpace
         </Typography>
       </Box>
 
+      {/* New Chat */}
       <Box sx={{ px: 2, mb: 1, display: 'flex', gap: 1 }}>
         <Button
           component={Link}
@@ -115,7 +115,7 @@ function Sidebar() {
           variant="contained"
           fullWidth
           startIcon={<AddChatIcon />}
-          sx={{ borderRadius: 2, justifyContent: 'flex-start', px: 2 }}
+          sx={{ justifyContent: 'flex-start', px: 2 }}
         >
           New Chat
         </Button>
@@ -123,47 +123,62 @@ function Sidebar() {
           component={Link}
           to="/chat/temp"
           variant="outlined"
-          sx={{ minWidth: '40px', px: 1, borderRadius: 2 }}
+          sx={{ minWidth: '42px', px: 1 }}
           title="Temporary Chat (Not saved)"
         >
-          <TempIcon />
+          <TempIcon fontSize="small" />
         </Button>
       </Box>
 
-      <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>
-        <List sx={{ px: 2, pt: 0 }}>
+      {/* Chat Sessions */}
+      <Box sx={{ flexGrow: 1, overflowY: 'auto', mt: 1 }}>
+        <List sx={{ px: 1.5, pt: 0 }}>
           {sessions.map((session) => {
             const isActive = location.pathname === `/chat/${session.id}`;
             return (
-              <ListItem key={session.id} disablePadding sx={{ mb: 0.5 }}>
+              <ListItem key={session.id} disablePadding sx={{ mb: 0.3 }}>
                 <ListItemButton
                   component={Link}
                   to={`/chat/${session.id}`}
                   selected={isActive}
                   sx={{
-                    borderRadius: 2,
+                    borderRadius: 1.5,
+                    py: 0.8,
                     '&.Mui-selected': {
-                      backgroundColor: '#eef2ff',
-                      color: 'primary.main',
-                      '& .MuiListItemIcon-root': {
-                        color: 'primary.main',
-                      },
+                      backgroundColor: 'rgba(0, 230, 138, 0.08)',
+                      '& .MuiListItemIcon-root': { color: '#00e68a' },
+                      '& .MuiListItemText-primary': { color: '#fff' },
+                    },
+                    '&:hover': {
+                      backgroundColor: 'rgba(145, 158, 171, 0.08)',
                     },
                   }}
                 >
-                  <ListItemIcon sx={{ minWidth: 36 }}>
-                    <ChatIcon fontSize="small" />
+                  <ListItemIcon sx={{ minWidth: 32, color: '#637381' }}>
+                    <ChatIcon sx={{ fontSize: 18 }} />
                   </ListItemIcon>
                   <ListItemText 
                     primary={session.title} 
                     primaryTypographyProps={{ 
-                      fontWeight: isActive ? 600 : 500, 
-                      fontSize: '0.85rem',
-                      noWrap: true 
+                      fontWeight: isActive ? 600 : 400, 
+                      fontSize: '0.8125rem',
+                      noWrap: true,
+                      color: isActive ? '#fff' : '#919eab',
                     }} 
                   />
-                  <IconButton size="small" onClick={(e) => handleDeleteSession(e, session.id)} sx={{ p: 0.5, ml: 1, opacity: 0.5, '&:hover': { opacity: 1, color: 'error.main' } }}>
-                    <DeleteIcon fontSize="small" />
+                  <IconButton 
+                    size="small" 
+                    onClick={(e) => handleDeleteSession(e, session.id)} 
+                    sx={{ 
+                      p: 0.4, 
+                      ml: 0.5, 
+                      opacity: 0, 
+                      transition: 'opacity 0.15s',
+                      '.MuiListItemButton-root:hover &': { opacity: 0.5 },
+                      '&:hover': { opacity: 1, color: '#ff5630' },
+                    }}
+                  >
+                    <DeleteIcon sx={{ fontSize: 16 }} />
                   </IconButton>
                 </ListItemButton>
               </ListItem>
@@ -171,35 +186,44 @@ function Sidebar() {
           })}
         </List>
 
-        <Divider sx={{ my: 1, mx: 2 }} />
+        <Divider sx={{ mx: 2, my: 1.5 }} />
 
-        <List sx={{ px: 2 }}>
-          <Typography variant="overline" sx={{ px: 2, color: 'text.secondary', fontWeight: 700 }}>Menu</Typography>
+        {/* Navigation */}
+        <List sx={{ px: 1.5 }}>
+          <Typography variant="overline" sx={{ px: 1.5, color: '#637381', fontWeight: 700, fontSize: '0.6875rem', letterSpacing: '0.08em' }}>
+            Menu
+          </Typography>
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
-              <ListItem key={item.path} disablePadding sx={{ mb: 0.5 }}>
+              <ListItem key={item.path} disablePadding sx={{ mb: 0.3 }}>
                 <ListItemButton
                   component={Link}
                   to={item.path}
                   selected={isActive}
                   sx={{
-                    borderRadius: 2,
+                    borderRadius: 1.5,
+                    py: 1,
                     '&.Mui-selected': {
-                      backgroundColor: '#eef2ff',
-                      color: 'primary.main',
-                      '& .MuiListItemIcon-root': {
-                        color: 'primary.main',
-                      },
+                      backgroundColor: 'rgba(0, 230, 138, 0.08)',
+                      '& .MuiListItemIcon-root': { color: '#00e68a' },
+                      '& .MuiListItemText-primary': { color: '#fff', fontWeight: 600 },
+                    },
+                    '&:hover': {
+                      backgroundColor: 'rgba(145, 158, 171, 0.08)',
                     },
                   }}
                 >
-                  <ListItemIcon sx={{ minWidth: 40 }}>
+                  <ListItemIcon sx={{ minWidth: 36, color: '#637381' }}>
                     {item.icon}
                   </ListItemIcon>
                   <ListItemText 
                     primary={item.label} 
-                    primaryTypographyProps={{ fontWeight: isActive ? 600 : 500 }} 
+                    primaryTypographyProps={{ 
+                      fontWeight: isActive ? 600 : 400,
+                      fontSize: '0.875rem',
+                      color: isActive ? '#fff' : '#919eab',
+                    }} 
                   />
                 </ListItemButton>
               </ListItem>
@@ -208,15 +232,16 @@ function Sidebar() {
         </List>
       </Box>
 
+      {/* User Profile */}
       <Box sx={{ p: 2 }}>
         <Divider sx={{ mb: 2 }} />
         <Box sx={{ 
           display: 'flex', 
           alignItems: 'center', 
-          gap: 2, 
-          p: 1, 
+          gap: 1.5, 
+          p: 1.5, 
           borderRadius: 2,
-          '&:hover': { bgcolor: 'action.hover' } 
+          bgcolor: 'rgba(145, 158, 171, 0.06)',
         }}>
           <UserButton 
             afterSignOutUrl="/login" 
@@ -227,10 +252,10 @@ function Sidebar() {
             }}
           />
           <Box sx={{ overflow: 'hidden' }}>
-            <Typography variant="subtitle2" noWrap sx={{ fontWeight: 600 }}>
+            <Typography variant="subtitle2" noWrap sx={{ fontWeight: 600, fontSize: '0.8125rem' }}>
               {user?.fullName || 'User'}
             </Typography>
-            <Typography variant="caption" color="text.secondary" noWrap display="block">
+            <Typography variant="caption" noWrap display="block" sx={{ color: '#637381', fontSize: '0.75rem' }}>
               {user?.primaryEmailAddress?.emailAddress}
             </Typography>
           </Box>

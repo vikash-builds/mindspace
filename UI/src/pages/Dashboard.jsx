@@ -15,9 +15,8 @@ function Dashboard() {
           display: 'flex', 
           alignItems: 'center', 
           px: 3, 
-          borderBottom: '1px solid #e5e7eb',
-          bgcolor: 'rgba(255, 255, 255, 0.8)',
-          backdropFilter: 'blur(8px)',
+          borderBottom: '1px dashed rgba(145, 158, 171, 0.2)',
+          bgcolor: '#212b36',
           zIndex: 10
         }}>
           <Typography variant="h6" sx={{ fontWeight: 700 }}>Assistant Chat</Typography>

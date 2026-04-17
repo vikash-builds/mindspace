@@ -117,29 +117,31 @@ function Settings() {
     <Box sx={{ display: 'flex', height: '100vh', width: '100vw' }}>
       <Sidebar />
       <Box component="main" sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        {/* Toolbar */}
         <Box sx={{
           height: 64,
           display: 'flex',
           alignItems: 'center',
           px: 3,
-          borderBottom: '1px solid #e5e7eb',
-          bgcolor: '#fff',
+          borderBottom: '1px dashed rgba(145, 158, 171, 0.2)',
+          bgcolor: '#212b36',
           zIndex: 10
         }}>
-          <SettingsIcon sx={{ mr: 1.5, color: 'text.secondary' }} />
+          <SettingsIcon sx={{ mr: 1.5, color: '#637381' }} />
           <Typography variant="h6" sx={{ fontWeight: 700 }}>Profile & AI Settings</Typography>
         </Box>
 
-        <Box sx={{ flex: 1, overflowY: 'auto', p: 4, bgcolor: '#f9fafb' }}>
+        {/* Content */}
+        <Box sx={{ flex: 1, overflowY: 'auto', p: 3.5, bgcolor: '#161c24' }}>
           <Box sx={{ maxWidth: 800, mx: 'auto' }}>
             <form onSubmit={handleSubmit}>
-              <Stack spacing={4}>
+              <Stack spacing={3}>
                 {/* Profession Card */}
-                <Paper variant="outlined" sx={{ p: 4, borderRadius: 4 }}>
-                  <Typography variant="subtitle2" sx={{ mb: 3, fontWeight: 800, textTransform: 'uppercase', color: 'text.secondary', letterSpacing: 1 }}>
+                <Paper sx={{ p: 3.5 }}>
+                  <Typography variant="overline" sx={{ fontWeight: 700, color: '#637381', letterSpacing: '0.08em', mb: 2.5, display: 'block' }}>
                     Professional Identity
                   </Typography>
-                  <Stack spacing={3}>
+                  <Stack spacing={2.5}>
                     <TextField fullWidth label="Full Name" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} required />
                     <TextField
                       fullWidth
@@ -160,55 +162,56 @@ function Settings() {
                 </Paper>
 
                 {/* AI Tuning Card */}
-                <Paper variant="outlined" sx={{ p: 4, borderRadius: 4 }}>
-                  <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 800, textTransform: 'uppercase', color: 'text.secondary', letterSpacing: 1 }}>
+                <Paper sx={{ p: 3.5 }}>
+                  <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2.5 }}>
+                    <Typography variant="overline" sx={{ fontWeight: 700, color: '#637381', letterSpacing: '0.08em' }}>
                       RAG Engine Configuration
                     </Typography>
                     {formData.profession !== 'custom' && (
-                      <Chip icon={<MagicIcon />} label="Auto-Optimized" color="primary" variant="soft" size="small" sx={{ fontWeight: 700 }} />
+                      <Chip 
+                        icon={<MagicIcon />} 
+                        label="Auto-Optimized" 
+                        size="small" 
+                        sx={{ fontWeight: 700, bgcolor: 'rgba(0, 230, 138, 0.12)', color: '#5be49b', '& .MuiChip-icon': { color: '#00e68a' } }} 
+                      />
                     )}
                   </Stack>
 
-                  <Alert
-                    severity="info"
-                    icon={<InfoIcon />}
-                    sx={{ mb: 4, borderRadius: 3 }}
-                  >
+                  <Alert severity="info" icon={<InfoIcon />} sx={{ mb: 3 }}>
                     <strong>Note:</strong> Changes to <em>Chunk Size</em> will only apply to <strong>new documents</strong> uploaded after this point. Existing documents will retain their current structure.
                   </Alert>
 
                   {formData.profession === 'custom' ? (
-                    <Stack spacing={5} sx={{ px: 1 }}>
+                    <Stack spacing={4} sx={{ px: 0.5 }}>
                       <Box>
                         <Stack direction="row" justifyContent="space-between" sx={{ mb: 1 }}>
-                          <Typography variant="body2" sx={{ fontWeight: 700 }}>Chunk Size</Typography>
-                          <Typography variant="caption" color="primary.main" sx={{ fontWeight: 800 }}>{formData.chunk_size} chars</Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>Chunk Size</Typography>
+                          <Typography variant="caption" sx={{ fontWeight: 700, color: '#00e68a' }}>{formData.chunk_size} chars</Typography>
                         </Stack>
                         <Slider value={formData.chunk_size} onChange={(e, v) => setFormData({ ...formData, chunk_size: v })} {...BOUNDARIES.chunk_size} />
                       </Box>
 
                       <Box>
                         <Stack direction="row" justifyContent="space-between" sx={{ mb: 1 }}>
-                          <Typography variant="body2" sx={{ fontWeight: 700 }}>Temperature</Typography>
-                          <Typography variant="caption" color="primary.main" sx={{ fontWeight: 800 }}>{formData.temperature}</Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>Temperature</Typography>
+                          <Typography variant="caption" sx={{ fontWeight: 700, color: '#00e68a' }}>{formData.temperature}</Typography>
                         </Stack>
                         <Slider value={formData.temperature} onChange={(e, v) => setFormData({ ...formData, temperature: v })} {...BOUNDARIES.temperature} />
                       </Box>
 
                       <Box>
                         <Stack direction="row" justifyContent="space-between" sx={{ mb: 1 }}>
-                          <Typography variant="body2" sx={{ fontWeight: 700 }}>Top K (Context)</Typography>
-                          <Typography variant="caption" color="primary.main" sx={{ fontWeight: 800 }}>{formData.top_k} sources</Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>Top K (Context)</Typography>
+                          <Typography variant="caption" sx={{ fontWeight: 700, color: '#00e68a' }}>{formData.top_k} sources</Typography>
                         </Stack>
                         <Slider value={formData.top_k} onChange={(e, v) => setFormData({ ...formData, top_k: v })} {...BOUNDARIES.top_k} />
                       </Box>
                     </Stack>
                   ) : (
-                    <Box sx={{ py: 2, textAlign: 'center', bgcolor: '#f8fafc', borderRadius: 3, border: '1px dashed #e2e8f0' }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Parameters are being handled automatically for the <strong>{formData.profession}</strong> workflow.<br />
-                        Switch to <strong>Custom Profession</strong> to unlock manual tuning.
+                    <Box sx={{ py: 3, textAlign: 'center', bgcolor: '#1a222c', borderRadius: 2, border: '1px dashed rgba(145, 158, 171, 0.16)' }}>
+                      <Typography variant="body2" sx={{ color: '#919eab' }}>
+                        Parameters are being handled automatically for the <strong style={{ color: '#fff' }}>{formData.profession}</strong> workflow.<br />
+                        Switch to <strong style={{ color: '#00e68a' }}>Custom Profession</strong> to unlock manual tuning.
                       </Typography>
                     </Box>
                   )}
@@ -221,7 +224,7 @@ function Settings() {
                     size="large"
                     startIcon={saving ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
                     disabled={saving}
-                    sx={{ px: 6, py: 1.5, borderRadius: 3, fontWeight: 700 }}
+                    sx={{ px: 5, py: 1.5, fontWeight: 700 }}
                   >
                     Save Changes
                   </Button>

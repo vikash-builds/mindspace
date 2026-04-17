@@ -76,8 +76,9 @@ function ChatWindow() {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', bgcolor: '#fff' }}>
-      <Box sx={{ flex: 1, overflowY: 'auto', py: 4 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', bgcolor: '#161c24' }}>
+      {/* Messages */}
+      <Box sx={{ flex: 1, overflowY: 'auto', py: 3 }}>
         {messages.length === 0 && (
           <Box sx={{ 
             display: 'flex', 
@@ -88,13 +89,18 @@ function ChatWindow() {
             textAlign: 'center',
             px: 3
           }}>
-            <Avatar sx={{ width: 64, height: 64, bgcolor: 'primary.main', mb: 3 }}>
-              <SparklesIcon sx={{ fontSize: 32 }} />
+            <Avatar sx={{ 
+              width: 64, 
+              height: 64, 
+              bgcolor: 'rgba(0, 230, 138, 0.12)', 
+              mb: 3,
+            }}>
+              <SparklesIcon sx={{ fontSize: 32, color: '#00e68a' }} />
             </Avatar>
             <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
               {chatId === 'temp' ? 'Temporary Chat' : 'How can I help you today?'}
             </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 400 }}>
+            <Typography variant="body1" sx={{ maxWidth: 400, color: '#919eab' }}>
               {chatId === 'temp' 
                 ? 'Messages in this session are not saved to history. Ask anything privately.'
                 : "Ask anything about your documents or set reminders for your upcoming tasks."}
@@ -107,29 +113,32 @@ function ChatWindow() {
         ))}
         
         {loading && (
-          <Box sx={{ px: 4, py: 2, display: 'flex', alignItems: 'center', gap: 2, color: 'text.secondary' }}>
-             <CircularProgress size={18} thickness={5} sx={{ color: 'primary.main' }} />
-             <Typography variant="body2" sx={{ fontStyle: 'italic' }}>MindSpace is thinking...</Typography>
+          <Box sx={{ px: 4, py: 2, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <CircularProgress size={16} thickness={5} />
+            <Typography variant="body2" sx={{ fontStyle: 'italic', color: '#919eab' }}>
+              MindSpace is thinking...
+            </Typography>
           </Box>
         )}
         <div ref={messagesEndRef} />
       </Box>
       
-      <Box sx={{ p: 3, borderTop: '1px solid #e5e7eb' }}>
+      {/* Input */}
+      <Box sx={{ p: 2.5, borderTop: '1px dashed rgba(145, 158, 171, 0.2)' }}>
         <Paper 
           component="form" 
           onSubmit={handleSend}
-          elevation={0}
           sx={{ 
             display: 'flex', 
             alignItems: 'center', 
             maxWidth: 800, 
             mx: 'auto',
             p: 0.5,
-            border: '1px solid #e5e7eb',
-            borderRadius: 4,
+            bgcolor: '#212b36',
+            border: '1px solid rgba(145, 158, 171, 0.16)',
+            borderRadius: 3,
             transition: 'border-color 0.2s',
-            '&:focus-within': { borderColor: 'primary.main' }
+            '&:focus-within': { borderColor: '#00e68a' }
           }}
         >
           <TextField
@@ -140,26 +149,39 @@ function ChatWindow() {
             disabled={loading}
             variant="standard"
             autoFocus
-            sx={{ px: 2 }}
+            sx={{ 
+              px: 2,
+              '& .MuiInputBase-input': {
+                '&::placeholder': { color: '#637381', opacity: 1 },
+              },
+            }}
             InputProps={{ disableUnderline: true }}
           />
           <IconButton 
             type="submit" 
-            color="primary" 
             disabled={!input.trim() || loading}
             sx={{ 
-              bgcolor: input.trim() ? 'primary.main' : 'transparent',
-              color: input.trim() ? '#fff' : 'inherit',
-              '&:hover': { bgcolor: 'primary.dark' },
-              p: 1.5,
-              borderRadius: 3
+              bgcolor: input.trim() ? '#00e68a' : 'rgba(145, 158, 171, 0.12)',
+              color: input.trim() ? '#161c24' : '#637381',
+              '&:hover': { bgcolor: input.trim() ? '#00ab66' : 'rgba(145, 158, 171, 0.2)' },
+              p: 1.2,
+              borderRadius: 2,
+              transition: 'all 0.2s',
             }}
           >
-            {loading ? <CircularProgress size={20} color="inherit" /> : <SendIcon />}
+            {loading ? <CircularProgress size={20} color="inherit" /> : <SendIcon fontSize="small" />}
           </IconButton>
         </Paper>
-        <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 1.5, color: 'text.disabled', fontWeight: 600, letterSpacing: 0.5 }}>
-          AI-GENERATED RESPONSES. PLEASE VERIFY IMPORTANT INFORMATION.
+        <Typography variant="caption" sx={{ 
+          display: 'block', 
+          textAlign: 'center', 
+          mt: 1.5, 
+          color: '#637381', 
+          fontWeight: 600, 
+          letterSpacing: '0.06em',
+          fontSize: '0.625rem',
+        }}>
+          AI-GENERATED RESPONSES · PLEASE VERIFY IMPORTANT INFORMATION
         </Typography>
       </Box>
     </Box>
