@@ -12,6 +12,19 @@ const db = new Database(config.DB_PATH);
 
 // Initialize schema
 db.exec(`
+  CREATE TABLE IF NOT EXISTS profiles (
+    user_id TEXT PRIMARY KEY,
+    email TEXT NOT NULL,
+    name TEXT NOT NULL,
+    profession TEXT NOT NULL,
+    chunk_size INTEGER DEFAULT 500,
+    chunk_overlap INTEGER DEFAULT 100,
+    top_k INTEGER DEFAULT 5,
+    temperature REAL DEFAULT 0.7,
+    similarity_threshold REAL DEFAULT 0.5,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
   CREATE TABLE IF NOT EXISTS documents (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id TEXT NOT NULL,

@@ -9,13 +9,14 @@ class RagBridge {
     });
   }
 
-  async ingest(userId, filePath, docId, fileType) {
+  async ingest(userId, filePath, docId, fileType, params = {}) {
     try {
       const response = await this.client.post('/ingest', {
         userId,
         filePath,
         docId,
-        fileType
+        fileType,
+        ...params
       });
       return response.data;
     } catch (error) {
@@ -24,12 +25,13 @@ class RagBridge {
     }
   }
 
-  async query(userId, question, chatHistory = []) {
+  async query(userId, question, chatHistory = [], params = {}) {
     try {
       const response = await this.client.post('/query', {
         userId,
         question,
-        chatHistory
+        chatHistory,
+        ...params
       });
       return response.data;
     } catch (error) {

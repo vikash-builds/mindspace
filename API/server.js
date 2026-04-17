@@ -9,6 +9,7 @@ app.use(cors());
 app.use(express.json());
 
 // Routes will be added here
+app.use('/api/profile', require('./routes/profile.routes'));
 app.use('/api/documents', require('./routes/documents.routes'));
 app.use('/api/chat', require('./routes/chat.routes'));
 app.use('/api/reminders', require('./routes/reminders.routes'));

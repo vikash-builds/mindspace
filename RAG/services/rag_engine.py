@@ -2,7 +2,7 @@ from services.embeddings import embedding_service
 from services.vector_store import get_vector_store
 from services.llm import llm_service
 
-def rag_query(user_id, question, chat_history=None):
+def rag_query(user_id, question, chat_history=None, top_k=5, temperature=0.7, similarity_threshold=0.5):
     if chat_history is None:
         chat_history = []
         
@@ -11,9 +11,13 @@ def rag_query(user_id, question, chat_history=None):
     
     # 2. Search FAISS
     vs = get_vector_store(user_id)
-    search_results = vs.search(query_embedding, k=5)
+    search_results = vs.search(query_embedding, k=top_k or 5)
     
-    # 3. Build Prompt
+    # 3. Filter by similarity threshold (optional, for simple L2 index, distance is closer to 0 for better match)
+    # FAISS IndexFlatL2 returns squared L2 distance. Smaller is better.
+    # threshold = similarity_threshold or 0.5
+    
+    # 4. Build Prompt
     context = "\n\n".join([f"--- Source {i+1} ---\n{res['text']}" for i, res in enumerate(search_results)])
     
     # Format chat history
@@ -30,8 +34,8 @@ def rag_query(user_id, question, chat_history=None):
     
     prompt = f"Context:\n{context}\n\nRecent History:\n{history_str}\n\nUser Question: {question}\n\nAnswer:"
     
-    # 4. Generate Response
-    answer = llm_service.generate_response(prompt, system_prompt)
+    # 5. Generate Response
+    answer = llm_service.generate_response(prompt, system_prompt, temperature=temperature)
     
     return {
         "answer": answer,

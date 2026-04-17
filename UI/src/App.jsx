@@ -1,8 +1,49 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { SignedIn, SignedOut, SignIn, SignUp, RedirectToSignIn } from '@clerk/clerk-react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { SignedIn, SignedOut, SignIn, SignUp, RedirectToSignIn, useAuth } from '@clerk/clerk-react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 import Dashboard from './pages/Dashboard';
 import Documents from './pages/Documents';
 import Reminders from './pages/Reminders';
+import Onboarding from './pages/Onboarding';
+import { Box, CircularProgress } from '@mui/material';
+
+const EnsureProfile = ({ children }) => {
+  const [loading, setLoading] = useState(true);
+  const [hasProfile, setHasProfile] = useState(false);
+  const { getToken } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkProfile = async () => {
+      try {
+        const token = await getToken();
+        const res = await axios.get('/api/profile', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.data) setHasProfile(true);
+      } catch (err) {
+        if (err.response?.status === 404) {
+          setHasProfile(false);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+    checkProfile();
+  }, [getToken]);
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (!hasProfile) return <Navigate to="/onboarding" />;
+  return children;
+};
 
 function App() {
   return (
@@ -24,34 +65,41 @@ function App() {
             </div>
           } 
         />
+        <Route 
+          path="/onboarding" 
+          element={
+            <SignedIn>
+              <Onboarding />
+            </SignedIn>
+          } 
+        />
         
         <Route 
           path="/" 
           element={
-            <>
-              <SignedIn><Dashboard /></SignedIn>
-              <SignedOut><RedirectToSignIn /></SignedOut>
-            </>
+            <SignedIn>
+              <EnsureProfile><Dashboard /></EnsureProfile>
+            </SignedIn>
           } 
         />
         <Route 
           path="/documents" 
           element={
-            <>
-              <SignedIn><Documents /></SignedIn>
-              <SignedOut><RedirectToSignIn /></SignedOut>
-            </>
+            <SignedIn>
+              <EnsureProfile><Documents /></EnsureProfile>
+            </SignedIn>
           } 
         />
         <Route 
           path="/reminders" 
           element={
-            <>
-              <SignedIn><Reminders /></SignedIn>
-              <SignedOut><RedirectToSignIn /></SignedOut>
-            </>
+            <SignedIn>
+              <EnsureProfile><Reminders /></EnsureProfile>
+            </SignedIn>
           } 
         />
+        
+        <Route path="*" element={<SignedOut><RedirectToSignIn /></SignedOut>} />
       </Routes>
     </Router>
   );

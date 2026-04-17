@@ -10,6 +10,8 @@ def handle_ingest():
     file_path = data.get('filePath')
     doc_id = data.get('docId')
     file_type = data.get('fileType')
+    chunk_size = data.get('chunkSize')
+    chunk_overlap = data.get('chunkOverlap')
     
     if not all([user_id, file_path, doc_id, file_type]):
         return jsonify({"error": "Missing required parameters"}), 400
@@ -23,8 +25,8 @@ def handle_ingest():
             return jsonify({"status": "error", "message": "Failed to parse document or document is empty"}), 400
             
         # 2. Chunk
-        print(f"Chunking document, length: {len(text)}")
-        chunks = chunk_text(text)
+        print(f"Chunking document, length: {len(text)}, size: {chunk_size}, overlap: {chunk_overlap}")
+        chunks = chunk_text(text, chunk_size=chunk_size, chunk_overlap=chunk_overlap)
         if not chunks:
             print(f"Chunking failed for {file_path}")
             return jsonify({"status": "error", "message": "Failed to chunk document"}), 400

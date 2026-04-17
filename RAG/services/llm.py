@@ -7,12 +7,15 @@ class OllamaService:
         self.base_url = config.OLLAMA_BASE_URL
         self.model = config.OLLAMA_MODEL
         
-    def generate_response(self, prompt, system_prompt="You are a helpful assistant."):
+    def generate_response(self, prompt, system_prompt="You are a helpful assistant.", temperature=0.7):
         payload = {
             "model": self.model,
             "prompt": prompt,
             "system": system_prompt,
-            "stream": False
+            "stream": False,
+            "options": {
+                "temperature": temperature or 0.7
+            }
         }
         
         try:

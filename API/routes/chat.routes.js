@@ -21,8 +21,15 @@ router.post('/', auth, async (req, res) => {
     db.prepare('INSERT INTO chat_history (user_id, role, content) VALUES (?, ?, ?)')
       .run(user_id, 'user', question);
 
+    // Get user profile for RAG params
+    const profile = db.prepare('SELECT top_k, temperature, similarity_threshold FROM profiles WHERE user_id = ?').get(user_id) || {};
+
     // 3. Call Python RAG
-    const result = await ragBridge.query(user_id, question, history);
+    const result = await ragBridge.query(user_id, question, history, {
+      topK: profile.top_k,
+      temperature: profile.temperature,
+      similarityThreshold: profile.similarity_threshold
+    });
 
     // 4. Save assistant response to DB
     db.prepare('INSERT INTO chat_history (user_id, role, content, source_chunks) VALUES (?, ?, ?, ?)')

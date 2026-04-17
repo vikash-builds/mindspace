@@ -52,8 +52,14 @@ router.post('/upload', auth, upload.single('file'), async (req, res) => {
     const info = stmt.run(user_id, originalname, fileType, filePath, 'processing');
     const docId = info.lastInsertRowid;
 
+    // Get user profile for RAG params
+    const profile = db.prepare('SELECT chunk_size, chunk_overlap FROM profiles WHERE user_id = ?').get(user_id) || {};
+
     // Call Python RAG ingest in the background (Node doesn't wait)
-    ragBridge.ingest(user_id, filePath, docId, fileType)
+    ragBridge.ingest(user_id, filePath, docId, fileType, {
+      chunkSize: profile.chunk_size,
+      chunkOverlap: profile.chunk_overlap
+    })
       .then(result => {
         db.prepare('UPDATE documents SET chunk_count = ?, status = ? WHERE id = ?')
           .run(result.chunkCount, 'ready', docId);

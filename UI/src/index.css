@@ -7,14 +7,12 @@
 body {
   margin: 0;
   padding: 0;
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden;
+  font-family: 'Inter', -apple-system, sans-serif;
+  background-color: #f9fafb;
 }
 
 #root {
-  height: 100vh;
-  width: 100vw;
+  min-height: 100vh;
 }
 
 .markdown-content h1, .markdown-content h2, .markdown-content h3 {
