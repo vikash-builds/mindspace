@@ -16,7 +16,8 @@ import {
   Chat as ChatIcon, 
   Description as DocsIcon, 
   Notifications as BellIcon, 
-  Psychology as BrainIcon 
+  Psychology as BrainIcon,
+  Settings as SettingsIcon
 } from '@mui/icons-material';
 
 const drawerWidth = 280;
@@ -29,6 +30,7 @@ function Sidebar() {
     { label: 'Chat', icon: <ChatIcon />, path: '/' },
     { label: 'Documents', icon: <DocsIcon />, path: '/documents' },
     { label: 'Reminders', icon: <BellIcon />, path: '/reminders' },
+    { label: 'Settings', icon: <SettingsIcon />, path: '/settings' },
   ];
 
   return (
@@ -103,7 +105,14 @@ function Sidebar() {
           borderRadius: 2,
           '&:hover': { bgcolor: 'action.hover' } 
         }}>
-          <UserButton afterSignOutUrl="/login" />
+          <UserButton 
+            afterSignOutUrl="/login" 
+            appearance={{
+              elements: {
+                userButtonPopoverActionButton__manageAccount: { display: 'none' }
+              }
+            }}
+          />
           <Box sx={{ overflow: 'hidden' }}>
             <Typography variant="subtitle2" noWrap sx={{ fontWeight: 600 }}>
               {user?.fullName || 'User'}

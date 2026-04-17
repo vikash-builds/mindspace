@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard';
 import Documents from './pages/Documents';
 import Reminders from './pages/Reminders';
 import Onboarding from './pages/Onboarding';
+import Settings from './pages/Settings';
 import { Box, CircularProgress } from '@mui/material';
 
 const EnsureProfile = ({ children }) => {
@@ -95,6 +96,14 @@ function App() {
           element={
             <SignedIn>
               <EnsureProfile><Reminders /></EnsureProfile>
+            </SignedIn>
+          } 
+        />
+        <Route 
+          path="/settings" 
+          element={
+            <SignedIn>
+              <EnsureProfile><Settings /></EnsureProfile>
             </SignedIn>
           } 
         />
