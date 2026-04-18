@@ -1,15 +1,17 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, Link } from 'react-router-dom';
-import { SignedIn, SignedOut, SignIn, SignUp, RedirectToSignIn, useAuth } from '@clerk/clerk-react';
+import { SignedIn, SignedOut, SignUp, RedirectToSignIn, useAuth } from '@clerk/clerk-react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Dashboard from './pages/Dashboard';
 import Landing from './pages/Landing';
 import Documents from './pages/Documents';
+import Integrations from './pages/Integrations';
 import Reminders from './pages/Reminders';
 import Onboarding from './pages/Onboarding';
 import Settings from './pages/Settings';
 import logo from './assets/logos/logo.png';
 import { Box, CircularProgress, Typography } from '@mui/material';
+import LoginForm from './components/auth/LoginForm';
 
 // Shared dark appearance config for all Clerk components
 const clerkAppearance = {
@@ -142,11 +144,22 @@ function App() {
       <Routes>
         <Route
           path="/login"
-          element={<AuthPage><SignIn routing="path" path="/login" signUpUrl="/register" appearance={clerkAppearance} /></AuthPage>}
+          element={<AuthPage><LoginForm /></AuthPage>}
         />
         <Route
           path="/register"
-          element={<AuthPage><SignUp routing="path" path="/register" signInUrl="/login" appearance={clerkAppearance} /></AuthPage>}
+          element={
+            <AuthPage>
+              <SignUp
+                routing="path"
+                path="/register"
+                signInUrl="/login"
+                fallbackRedirectUrl="/onboarding"
+                forceRedirectUrl="/onboarding"
+                appearance={clerkAppearance}
+              />
+            </AuthPage>
+          }
         />
         <Route
           path="/onboarding"
@@ -183,6 +196,14 @@ function App() {
           element={
             <SignedIn>
               <EnsureProfile><Documents /></EnsureProfile>
+            </SignedIn>
+          }
+        />
+        <Route
+          path="/integrations"
+          element={
+            <SignedIn>
+              <EnsureProfile><Integrations /></EnsureProfile>
             </SignedIn>
           }
         />

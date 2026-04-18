@@ -380,7 +380,13 @@ const theme = createTheme({
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+    <ClerkProvider
+      publishableKey={PUBLISHABLE_KEY}
+      signInFallbackRedirectUrl="/"
+      signUpFallbackRedirectUrl="/onboarding"
+      signInForceRedirectUrl="/"
+      signUpForceRedirectUrl="/onboarding"
+    >
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <App />

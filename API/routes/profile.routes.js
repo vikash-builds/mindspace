@@ -1,57 +1,69 @@
 const express = require('express');
-const router = express.Router();
+
 const auth = require('../middleware/auth');
 const db = require('../database');
 
-// Get profile
-router.get('/', auth, (req, res) => {
-  const user_id = req.auth.userId;
+const router = express.Router();
+
+router.get('/', auth, async (req, res) => {
   try {
-    const profile = db.prepare('SELECT * FROM profiles WHERE user_id = ?').get(user_id);
-    if (!profile) return res.status(404).json({ error: 'Profile not found' });
+    const result = await db.query('SELECT * FROM profiles WHERE user_id = $1', [req.auth.userId]);
+    const profile = result.rows[0];
+    if (!profile) {
+      return res.status(404).json({ error: 'Profile not found' });
+    }
     res.json(profile);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 
-// Create/Update profile
-router.post('/', auth, (req, res) => {
-  const user_id = req.auth.userId;
-  const { email, name, profession, chunk_size, chunk_overlap, top_k, temperature, similarity_threshold } = req.body;
-
-  console.log("Profile request received:", { user_id, body: req.body });
+router.post('/', auth, async (req, res) => {
+  const userId = req.auth.userId;
+  const {
+    email,
+    name,
+    profession,
+    chunk_size,
+    chunk_overlap,
+    top_k,
+    temperature,
+    similarity_threshold,
+  } = req.body;
 
   if (!name || !profession) {
-    console.error("Validation failed:", { name, profession });
     return res.status(400).json({ error: 'Name and profession are required' });
   }
 
   try {
-    const existing = db.prepare('SELECT user_id FROM profiles WHERE user_id = ?').get(user_id);
-    
-    if (existing) {
-      db.prepare(`
-        UPDATE profiles SET 
-          email = ?, name = ?, profession = ?, 
-          chunk_size = ?, chunk_overlap = ?, top_k = ?, 
-          temperature = ?, similarity_threshold = ?
-        WHERE user_id = ?
-      `).run(email || '', name, profession, chunk_size, chunk_overlap, top_k, temperature, similarity_threshold, user_id);
-    } else {
-      db.prepare(`
-        INSERT INTO profiles (
-          user_id, email, name, profession, 
-          chunk_size, chunk_overlap, top_k, 
-          temperature, similarity_threshold
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `).run(user_id, email || '', name, profession, chunk_size, chunk_overlap, top_k, temperature, similarity_threshold);
-    }
-    
+    await db.query(`
+      INSERT INTO profiles (
+        user_id, email, name, profession, chunk_size, chunk_overlap, top_k, temperature, similarity_threshold
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      ON CONFLICT (user_id) DO UPDATE SET
+        email = EXCLUDED.email,
+        name = EXCLUDED.name,
+        profession = EXCLUDED.profession,
+        chunk_size = EXCLUDED.chunk_size,
+        chunk_overlap = EXCLUDED.chunk_overlap,
+        top_k = EXCLUDED.top_k,
+        temperature = EXCLUDED.temperature,
+        similarity_threshold = EXCLUDED.similarity_threshold
+    `, [
+      userId,
+      email || '',
+      name,
+      profession,
+      chunk_size,
+      chunk_overlap,
+      top_k,
+      temperature,
+      similarity_threshold,
+    ]);
+
     res.json({ message: 'Profile saved successfully' });
-  } catch (err) {
-    console.error("Profile save error:", err.message);
-    res.status(500).json({ error: err.message });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 

@@ -3,6 +3,7 @@ from services.parser import get_document_text
 from services.chunker import chunk_text
 from services.embeddings import embedding_service
 from services.vector_store import get_vector_store
+from services.action_extractor import extract_action_candidates
 
 def handle_ingest():
     data = request.json
@@ -12,6 +13,14 @@ def handle_ingest():
     file_type = data.get('fileType')
     chunk_size = data.get('chunkSize')
     chunk_overlap = data.get('chunkOverlap')
+    embedding_provider = data.get('embeddingProvider')
+    vector_provider = data.get('vectorProvider')
+    metadata = {
+        'source_type': data.get('sourceType', 'local'),
+        'source_name': data.get('sourceName', ''),
+        'external_url': data.get('externalUrl', ''),
+        'mime_type': data.get('mimeType', ''),
+    }
     
     if not all([user_id, file_path, doc_id, file_type]):
         return jsonify({"error": "Missing required parameters"}), 400
@@ -33,17 +42,19 @@ def handle_ingest():
             
         # 3. Embed
         print(f"Embedding {len(chunks)} chunks")
-        embeddings = embedding_service.embed_text(chunks)
+        embeddings = embedding_service.embed_text(chunks, provider=embedding_provider)
         
         # 4. Store in Vector Store
         print(f"Storing in FAISS index for user {user_id}")
-        vs = get_vector_store(user_id)
-        count = vs.add_chunks(doc_id, chunks, embeddings)
+        vs = get_vector_store(user_id, provider=vector_provider)
+        count = vs.add_chunks(doc_id, chunks, embeddings, metadata=metadata)
+        action_candidates = extract_action_candidates(text)
         print(f"Ingest successful: {count} chunks added")
         
         return jsonify({
             "status": "success",
-            "chunkCount": count
+            "chunkCount": count,
+            "actionCandidates": action_candidates,
         })
     except Exception as e:
         print(f"Ingest error: {e}")

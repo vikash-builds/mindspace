@@ -4,6 +4,7 @@ import { UserButton, useUser, useAuth } from '@clerk/clerk-react';
 import axios from 'axios';
 import logo from '../assets/logos/logo.png';
 import {
+  Alert,
   Box,
   Drawer,
   List,
@@ -15,12 +16,14 @@ import {
   Divider,
   IconButton,
   Button,
+  Snackbar,
   listItemTextClasses
 } from '@mui/material';
 import {
   Description as DocsIcon,
   Notifications as BellIcon,
   Settings as SettingsIcon,
+  Hub as IntegrationsIcon,
   Add as AddChatIcon,
   ChatBubble as ChatIcon,
   Timer as TempIcon,
@@ -35,6 +38,8 @@ function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const [sessions, setSessions] = useState([]);
+  const [notificationQueue, setNotificationQueue] = useState([]);
+  const [activeNotification, setActiveNotification] = useState(null);
 
   const fetchSessions = async () => {
     try {
@@ -54,6 +59,80 @@ function Sidebar() {
     const interval = setInterval(fetchSessions, 5000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const token = await getToken();
+        const res = await axios.get('/api/reminders/notifications', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const reminders = res.data || [];
+        if (!reminders.length) {
+          return;
+        }
+
+        setNotificationQueue((current) => {
+          const existingIds = new Set([
+            ...current.map((item) => item.id),
+            ...(activeNotification ? [activeNotification.id] : []),
+          ]);
+          const next = reminders.filter((item) => !existingIds.has(item.id));
+          return next.length ? [...current, ...next] : current;
+        });
+
+        if ('Notification' in window && Notification.permission === 'default') {
+          Notification.requestPermission().catch(() => {});
+        }
+      } catch (err) {
+        console.error('Failed to fetch reminder notifications', err);
+      }
+    };
+
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 10000);
+    return () => clearInterval(interval);
+  }, [getToken, activeNotification]);
+
+  useEffect(() => {
+    if (!activeNotification && notificationQueue.length > 0) {
+      setActiveNotification(notificationQueue[0]);
+      setNotificationQueue((current) => current.slice(1));
+    }
+  }, [notificationQueue, activeNotification]);
+
+  useEffect(() => {
+    if (!activeNotification) {
+      return;
+    }
+
+    if ('Notification' in window && Notification.permission === 'granted') {
+      const notification = new Notification(`Reminder: ${activeNotification.title}`, {
+        body: activeNotification.description || `Scheduled for ${new Date(activeNotification.remind_at).toLocaleString()}`,
+      });
+      notification.onclick = () => {
+        window.focus();
+        navigate('/reminders');
+      };
+    }
+  }, [activeNotification, navigate]);
+
+  const acknowledgeNotification = async () => {
+    if (!activeNotification) {
+      return;
+    }
+
+    try {
+      const token = await getToken();
+      await axios.post(`/api/reminders/notifications/${activeNotification.id}/ack`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+    } catch (err) {
+      console.error('Failed to acknowledge reminder notification', err);
+    } finally {
+      setActiveNotification(null);
+    }
+  };
 
   const handleDeleteSession = async (e, id) => {
     e.preventDefault();
@@ -76,22 +155,24 @@ function Sidebar() {
 
   const navItems = [
     { label: 'Documents', icon: <DocsIcon />, path: '/documents' },
+    { label: 'Integrations', icon: <IntegrationsIcon />, path: '/integrations' },
     { label: 'Reminders', icon: <BellIcon />, path: '/reminders' },
     { label: 'Settings', icon: <SettingsIcon />, path: '/settings' },
   ];
 
   return (
-    <Drawer
-      variant="permanent"
-      sx={{
-        width: drawerWidth,
-        flexShrink: 0,
-        '& .MuiDrawer-paper': {
+    <>
+      <Drawer
+        variant="permanent"
+        sx={{
           width: drawerWidth,
-          boxSizing: 'border-box',
-        },
-      }}
-    >
+          flexShrink: 0,
+          '& .MuiDrawer-paper': {
+            width: drawerWidth,
+            boxSizing: 'border-box',
+          },
+        }}
+      >
       {/* Logo */}
       <Box sx={{ p: 2.5, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
         <img src={logo} alt="MindSpace" style={{ width: 52, height: 52, objectFit: 'cover', zoom: 1.5 }} />
@@ -273,7 +354,19 @@ function Sidebar() {
           </Box>
         </Box>
       </Box>
-    </Drawer>
+      </Drawer>
+      <Snackbar
+        open={Boolean(activeNotification)}
+        autoHideDuration={8000}
+        onClose={acknowledgeNotification}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert onClose={acknowledgeNotification} severity="info" variant="filled" sx={{ width: '100%' }}>
+          <strong>{activeNotification?.title}</strong>
+          {activeNotification?.description ? ` — ${activeNotification.description}` : ''}
+        </Alert>
+      </Snackbar>
+    </>
   );
 }
 

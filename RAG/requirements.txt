@@ -12,3 +12,5 @@ tqdm==4.66.1
 python-dotenv==1.0.0
 pytesseract==0.3.13
 Pillow==11.3.0
+openai==1.77.0
+pinecone==6.0.2

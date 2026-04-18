@@ -5,7 +5,7 @@ class RagBridge {
   constructor() {
     this.client = axios.create({
       baseURL: config.PYTHON_RAG_URL,
-      timeout: 60000 // Ingest can take a while
+      timeout: 300000 // Ingest and hosted embedding/indexing can take several minutes
     });
   }
 
@@ -41,13 +41,31 @@ class RagBridge {
   }
 
   async deleteDocument(userId, docId) {
+    return this.deleteDocumentFromProvider(userId, docId, {});
+  }
+
+  async deleteDocumentFromProvider(userId, docId, params = {}) {
     try {
       const response = await this.client.delete(`/documents/${docId}`, {
-        data: { userId }
+        data: { userId, ...params }
       });
       return response.data;
     } catch (error) {
       console.error('RAG Delete error:', error.response?.data || error.message);
+      throw error;
+    }
+  }
+
+  async extractActions(filePath, fileType, text = null) {
+    try {
+      const response = await this.client.post('/extract-actions', {
+        filePath,
+        fileType,
+        text,
+      });
+      return response.data;
+    } catch (error) {
+      console.error('RAG Action Extraction error:', error.response?.data || error.message);
       throw error;
     }
   }

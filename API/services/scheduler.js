@@ -1,49 +1,70 @@
-const cron = require('node-cron');
 const db = require('../database');
 const emailService = require('./email.service');
 
 const startScheduler = () => {
-  // Check every minute for due reminders
-  cron.schedule('* * * * *', () => {
+  let running = false;
+
+  const runCycle = async () => {
+    if (running) {
+      return;
+    }
+
+    running = true;
     const now = new Date().toISOString();
-    
+
     try {
-      // Find pending reminders due now or earlier
-      const dueReminders = db.prepare(`
-        SELECT * 
+      const result = await db.query(`
+        SELECT reminders.*, profiles.email
         FROM reminders
-        WHERE remind_at <= ? AND status = 'pending'
-      `).all(now);
+        LEFT JOIN profiles ON profiles.user_id = reminders.user_id
+        WHERE remind_at <= $1 AND status = 'pending'
+      `, [now]);
 
-      for (const reminder of dueReminders) {
-        console.log(`Processing reminder: ${reminder.title} for user ${reminder.user_id}`);
-
-        // Send email if requested
+      for (const reminder of result.rows) {
         if (reminder.email_notify) {
-          // Note: In Clerk mode, we'd need to fetch the email from Clerk API or store it locally.
-          // For now, we'll log it.
-          console.log(`Email notification requested for ${reminder.user_id}, but Clerk email sync is pending.`);
-          // emailService.sendReminder(userEmail, reminder.title, reminder.description);
+          await emailService.sendReminder(reminder.email, reminder.title, reminder.description);
         }
 
-        // Update status to 'fired'
-        db.prepare("UPDATE reminders SET status = 'fired' WHERE id = ?").run(reminder.id);
+        await db.query(
+          "UPDATE reminders SET status = 'fired', delivered_at = NOW(), updated_at = NOW() WHERE id = $1",
+          [reminder.id],
+        );
 
-        // Handle recurrence (simplified: if daily, schedule for tomorrow)
         if (reminder.recurrence === 'daily') {
           const nextDate = new Date(reminder.remind_at);
           nextDate.setDate(nextDate.getDate() + 1);
-          
-          db.prepare('INSERT INTO reminders (user_id, title, description, remind_at, recurrence, email_notify) VALUES (?, ?, ?, ?, ?, ?)')
-            .run(reminder.user_id, reminder.title, reminder.description, nextDate.toISOString(), 'daily', reminder.email_notify);
+          await db.query(`
+            INSERT INTO reminders (
+              user_id, title, description, remind_at, recurrence, status,
+              priority, category, notes, source_document_id, source_message_id, email_notify
+            ) VALUES ($1, $2, $3, $4, 'daily', 'pending', $5, $6, $7, $8, $9, $10)
+          `, [
+            reminder.user_id,
+            reminder.title,
+            reminder.description,
+            nextDate.toISOString(),
+            reminder.priority,
+            reminder.category,
+            reminder.notes,
+            reminder.source_document_id,
+            reminder.source_message_id,
+            reminder.email_notify,
+          ]);
         }
       }
     } catch (error) {
       console.error('Scheduler error:', error);
+    } finally {
+      running = false;
     }
-  });
+  };
 
-  console.log('MindSpace Scheduler started');
+  runCycle().catch(() => {});
+  setInterval(() => {
+    runCycle().catch(() => {});
+  }, 15000);
+
+  console.log('MindSpace Scheduler started (15s cadence)');
 };
 
 module.exports = { startScheduler };

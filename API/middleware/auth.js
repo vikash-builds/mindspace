@@ -1,6 +1,12 @@
-const { ClerkExpressRequireAuth } = require('@clerk/clerk-sdk-node');
+const { getAuth } = require('@clerk/express');
 
-// Use the Clerk middleware to require authentication on routes
-module.exports = ClerkExpressRequireAuth({
-  // Any options here
-});
+module.exports = (req, res, next) => {
+  const auth = getAuth(req);
+
+  if (!auth?.userId) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  req.auth = auth;
+  next();
+};
