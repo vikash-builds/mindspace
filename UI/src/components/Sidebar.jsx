@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { UserButton, useUser, useAuth } from '@clerk/clerk-react';
 import axios from 'axios';
+import logo from '../assets/logos/logo.png';
 import {
   Box,
   Drawer,
@@ -19,7 +20,6 @@ import {
 import {
   Description as DocsIcon,
   Notifications as BellIcon,
-  Psychology as BrainIcon,
   Settings as SettingsIcon,
   Add as AddChatIcon,
   ChatBubble as ChatIcon,
@@ -93,17 +93,9 @@ function Sidebar() {
       }}
     >
       {/* Logo */}
-      <Box sx={{ p: 2.5, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-        <Box sx={{
-          bgcolor: '#00e68a',
-          p: 0.8,
-          borderRadius: 1.5,
-          display: 'flex',
-          color: '#161c24',
-        }}>
-          <BrainIcon fontSize="small" />
-        </Box>
-        <Typography variant="h6" sx={{ fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.02em' }}>
+      <Box sx={{ p: 2.5, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <img src={logo} alt="MindSpace" style={{ width: 52, height: 52, objectFit: 'cover', zoom: 1.5 }} />
+        <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.35rem', letterSpacing: '-0.02em' }}>
           MindSpace
         </Typography>
       </Box>
