@@ -19,16 +19,16 @@ import {
 } from '@mui/icons-material';
 
 function FileUploader({ onUploadSuccess }) {
-  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [status, setStatus] = useState('idle'); // idle, success, error
   const [message, setMessage] = useState('');
   const { getToken } = useAuth();
 
   const handleFileChange = (e) => {
-    const selected = e.target.files[0];
-    if (selected) {
-      setFile(selected);
+    const selected = Array.from(e.target.files);
+    if (selected.length > 0) {
+      setFiles(selected);
       setStatus('idle');
       setMessage('');
     }
@@ -36,28 +36,35 @@ function FileUploader({ onUploadSuccess }) {
 
   const handleUpload = async (e) => {
     e.preventDefault();
-    if (!file) return;
+    if (!files.length) return;
 
     setUploading(true);
-    const formData = new FormData();
-    formData.append('file', file);
+    let successCount = 0;
 
     try {
       const token = await getToken();
-      const res = await axios.post('/api/documents/upload', formData, {
-        headers: { 
-          'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${token}` 
-        }
+      
+      const uploadPromises = files.map(file => {
+        const formData = new FormData();
+        formData.append('file', file);
+        return axios.post('/api/documents/upload', formData, {
+          headers: { 
+            'Content-Type': 'multipart/form-data',
+            'Authorization': `Bearer ${token}` 
+          }
+        }).then(() => successCount++);
       });
+
+      await Promise.all(uploadPromises);
+
       setStatus('success');
-      setMessage(`Successfully uploaded ${res.data.filename}`);
-      setFile(null);
+      setMessage(`Successfully uploaded ${successCount} file(s)`);
+      setFiles([]);
       e.target.reset();
       if (onUploadSuccess) setTimeout(onUploadSuccess, 1500);
     } catch (err) {
       setStatus('error');
-      setMessage(err.response?.data?.error || 'Upload failed. Please try again.');
+      setMessage(err.response?.data?.error || `Upload failed. ${successCount} of ${files.length} uploaded successfully.`);
     } finally {
       setUploading(false);
     }
@@ -100,13 +107,14 @@ function FileUploader({ onUploadSuccess }) {
             </Avatar>
             <Typography variant="h6" sx={{ fontWeight: 700 }}>Upload Knowledge</Typography>
             <Typography variant="body2" sx={{ color: '#919eab' }}>
-              PDF, Word, Excel, PowerPoint or Text files
+              PDF, Word, Excel, PowerPoint, Text, or Images (JPG, PNG, WEBP)
             </Typography>
           </Box>
           
           <Box sx={{ mb: 3, maxWidth: 400, mx: 'auto', position: 'relative' }}>
             <input 
               type="file" 
+              multiple
               onChange={handleFileChange} 
               disabled={uploading}
               style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
@@ -117,7 +125,7 @@ function FileUploader({ onUploadSuccess }) {
               bgcolor: '#1a222c', 
               border: '1px solid rgba(145, 158, 171, 0.16)', 
               borderRadius: 2,
-              color: file ? '#fff' : '#637381',
+              color: files.length ? '#fff' : '#637381',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -126,10 +134,10 @@ function FileUploader({ onUploadSuccess }) {
               '&:hover': { borderColor: 'rgba(145, 158, 171, 0.32)' },
             }}>
               <Typography noWrap variant="body2" sx={{ fontWeight: 500 }}>
-                {file ? file.name : "Select a file..."}
+                {files.length > 0 ? (files.length === 1 ? files[0].name : `${files.length} files selected`) : "Select files..."}
               </Typography>
-              {file && !uploading && (
-                <IconButton size="small" onClick={(e) => { e.stopPropagation(); setFile(null); }} sx={{ color: '#637381' }}>
+              {files.length > 0 && !uploading && (
+                <IconButton size="small" onClick={(e) => { e.preventDefault(); setFiles([]); e.stopPropagation(); }} sx={{ color: '#637381', zIndex: 1, position: 'relative' }}>
                   <XIcon fontSize="inherit" />
                 </IconButton>
               )}
@@ -146,7 +154,7 @@ function FileUploader({ onUploadSuccess }) {
             type="submit" 
             variant="contained" 
             size="large"
-            disabled={!file || uploading}
+            disabled={files.length === 0 || uploading}
             startIcon={uploading ? <CircularProgress size={20} color="inherit" /> : null}
             sx={{ px: 5 }}
           >

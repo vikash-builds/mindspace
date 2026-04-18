@@ -85,4 +85,11 @@ db.exec(`
   );
 `);
 
+// Safe migration for error_message
+try {
+  db.exec(`ALTER TABLE documents ADD COLUMN error_message TEXT;`);
+} catch (e) {
+  // Column already exists
+}
+
 module.exports = db;

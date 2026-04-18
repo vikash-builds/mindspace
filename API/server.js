@@ -25,8 +25,10 @@ app.use((err, req, res, next) => {
 });
 
 const { startScheduler } = require('./services/scheduler');
+const { startWatcher } = require('./watcher');
 
 app.listen(config.PORT, () => {
   console.log(`MindSpace API running on port ${config.PORT}`);
+  startWatcher();
   startScheduler();
 });

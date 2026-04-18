@@ -27,12 +27,12 @@ const storage = multer.diskStorage({
 const upload = multer({ 
   storage: storage,
   fileFilter: (req, file, cb) => {
-    const allowedExtensions = ['.pdf', '.txt', '.docx', '.xlsx', '.pptx'];
+    const allowedExtensions = ['.pdf', '.txt', '.docx', '.xlsx', '.pptx', '.jpg', '.jpeg', '.png', '.webp'];
     const ext = path.extname(file.originalname).toLowerCase();
     if (allowedExtensions.includes(ext)) {
       cb(null, true);
     } else {
-      cb(new Error('Invalid file type. Only PDF, TXT, DOCX, XLSX, and PPTX are allowed.'));
+      cb(new Error('Invalid file type. Only PDF, TXT, DOCX, XLSX, PPTX, JPG, JPEG, PNG, and WEBP are allowed.'));
     }
   }
 });
@@ -65,9 +65,10 @@ router.post('/upload', auth, upload.single('file'), async (req, res) => {
           .run(result.chunkCount, 'ready', docId);
       })
       .catch(err => {
-        console.error(`Ingest failed for doc ${docId}:`, err);
-        db.prepare('UPDATE documents SET status = ? WHERE id = ?')
-          .run('error', docId);
+        const errorMsg = err.response?.data?.message || err.message || 'Unknown ingestion error';
+        console.error(`Ingest failed for doc ${docId}:`, errorMsg);
+        db.prepare('UPDATE documents SET status = ?, error_message = ? WHERE id = ?')
+          .run('error', errorMsg, docId);
       });
 
     res.status(201).json({ 
@@ -114,6 +115,43 @@ router.delete('/:id', auth, async (req, res) => {
     res.json({ message: 'Document deleted successfully' });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// Re-digest all documents for a user
+router.post('/redigest', auth, async (req, res) => {
+  const user_id = req.auth.userId;
+  try {
+    const docs = db.prepare("SELECT * FROM documents WHERE user_id = ? AND file_type != ''").all(user_id);
+    const profile = db.prepare('SELECT chunk_size, chunk_overlap FROM profiles WHERE user_id = ?').get(user_id) || {};
+
+    // Don't wait for completion here, respond immediately since redigest can take minutes
+    res.status(202).json({ message: `Redigest initiated for ${docs.length} documents` });
+
+    for (const doc of docs) {
+      if (!fs.existsSync(doc.file_path)) continue;
+
+      db.prepare('UPDATE documents SET chunk_count = 0, status = ?, error_message = NULL WHERE id = ?').run('processing', doc.id);
+      await ragBridge.deleteDocument(user_id, doc.id).catch(() => {});
+
+      ragBridge.ingest(user_id, doc.file_path, doc.id, doc.file_type, {
+        chunkSize: profile.chunk_size,
+        chunkOverlap: profile.chunk_overlap
+      }).then(result => {
+        db.prepare('UPDATE documents SET chunk_count = ?, status = ? WHERE id = ?')
+          .run(result.chunkCount, 'ready', doc.id);
+      }).catch(err => {
+        const errorMsg = err.response?.data?.message || err.message || 'Unknown ingestion error';
+        db.prepare('UPDATE documents SET status = ?, error_message = ? WHERE id = ?')
+          .run('error', errorMsg, doc.id);
+      });
+    }
+  } catch (err) {
+    console.error('Redigest error:', err);
+    // If we haven't responded yet
+    if (!res.headersSent) {
+      res.status(500).json({ error: err.message });
+    }
   }
 });
 

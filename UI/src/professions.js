@@ -1,82 +1,82 @@
 export const PROFESSIONS = [
-  { 
-    id: 'student', 
-    label: 'Student', 
+  {
+    id: 'student',
+    label: 'Student',
     params: { chunk_size: 500, chunk_overlap: 100, top_k: 10, temperature: 0.5, similarity_threshold: 0.3 }
   },
-  { 
-    id: 'doctor', 
-    label: 'Doctor', 
+  {
+    id: 'doctor',
+    label: 'Doctor',
     params: { chunk_size: 800, chunk_overlap: 150, top_k: 5, temperature: 0.2, similarity_threshold: 0.4 }
   },
-  { 
-    id: 'lawyer', 
-    label: 'Lawyer', 
+  {
+    id: 'lawyer',
+    label: 'Lawyer',
     params: { chunk_size: 1200, chunk_overlap: 250, top_k: 8, temperature: 0.1, similarity_threshold: 0.5 }
   },
-  { 
-    id: 'teacher', 
-    label: 'Teacher', 
+  {
+    id: 'teacher',
+    label: 'Teacher',
     params: { chunk_size: 600, chunk_overlap: 100, top_k: 7, temperature: 0.6, similarity_threshold: 0.3 }
   },
-  { 
-    id: 'researcher', 
-    label: 'Researcher', 
+  {
+    id: 'researcher',
+    label: 'Researcher',
     params: { chunk_size: 1500, chunk_overlap: 300, top_k: 12, temperature: 0.4, similarity_threshold: 0.35 }
   },
-  { 
-    id: 'hr', 
-    label: 'HR Manager', 
+  {
+    id: 'hr',
+    label: 'HR Manager',
     params: { chunk_size: 600, chunk_overlap: 100, top_k: 5, temperature: 0.3, similarity_threshold: 0.4 }
   },
-  { 
-    id: 'engineer', 
-    label: 'Software Engineer', 
+  {
+    id: 'engineer',
+    label: 'Software Engineer',
     params: { chunk_size: 800, chunk_overlap: 150, top_k: 8, temperature: 0.2, similarity_threshold: 0.5 }
   },
-  { 
-    id: 'accountant', 
-    label: 'Accountant', 
+  {
+    id: 'accountant',
+    label: 'Accountant',
     params: { chunk_size: 400, chunk_overlap: 50, top_k: 5, temperature: 0.1, similarity_threshold: 0.6 }
   },
-  { 
-    id: 'journalist', 
-    label: 'Journalist', 
+  {
+    id: 'journalist',
+    label: 'Journalist',
     params: { chunk_size: 1000, chunk_overlap: 200, top_k: 10, temperature: 0.6, similarity_threshold: 0.3 }
   },
-  { 
-    id: 'writer', 
-    label: 'Writer/Author', 
+  {
+    id: 'writer',
+    label: 'Writer/Author',
     params: { chunk_size: 1500, chunk_overlap: 300, top_k: 15, temperature: 0.8, similarity_threshold: 0.2 }
   },
-  { 
-    id: 'architect', 
-    label: 'Architect', 
+  {
+    id: 'architect',
+    label: 'Architect',
     params: { chunk_size: 800, chunk_overlap: 150, top_k: 6, temperature: 0.3, similarity_threshold: 0.4 }
   },
-  { 
-    id: 'analyst', 
-    label: 'Data Analyst', 
+  {
+    id: 'analyst',
+    label: 'Data Analyst',
     params: { chunk_size: 500, chunk_overlap: 100, top_k: 8, temperature: 0.2, similarity_threshold: 0.5 }
   },
-  { 
-    id: 'manager', 
-    label: 'Project Manager', 
+  {
+    id: 'manager',
+    label: 'Project Manager',
     params: { chunk_size: 600, chunk_overlap: 100, top_k: 5, temperature: 0.4, similarity_threshold: 0.3 }
   },
-  { 
-    id: 'sales', 
-    label: 'Sales Executive', 
+  {
+    id: 'sales',
+    label: 'Sales Executive',
     params: { chunk_size: 400, chunk_overlap: 50, top_k: 5, temperature: 0.5, similarity_threshold: 0.3 }
   },
-  { 
-    id: 'legal', 
-    label: 'Legal Assistant', 
+  {
+    id: 'legal',
+    label: 'Legal Assistant',
     params: { chunk_size: 1000, chunk_overlap: 200, top_k: 10, temperature: 0.1, similarity_threshold: 0.5 }
   },
-  { 
-    id: 'custom', 
-    label: 'Custom Profession...', 
+  {
+    id: 'custom',
+    label: 'CUSTOM PROFESSION',
     params: { chunk_size: 500, chunk_overlap: 100, top_k: 5, temperature: 0.7, similarity_threshold: 0.5 }
   }
 ];

@@ -14,14 +14,18 @@ import {
   Stack,
   Snackbar,
   CircularProgress,
-  Chip
+  Chip,
+  Tooltip,
+  IconButton
 } from '@mui/material';
 import {
   Settings as SettingsIcon,
   AutoFixHigh as MagicIcon,
   Tune as TuningIcon,
   InfoOutlined as InfoIcon,
-  Save as SaveIcon
+  Save as SaveIcon,
+  HelpOutlined as HelpIcon,
+  Sync as SyncIcon
 } from '@mui/icons-material';
 import { PROFESSIONS, BOUNDARIES } from '../professions';
 import axios from 'axios';
@@ -31,7 +35,9 @@ function Settings() {
   const { getToken } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaveLoading] = useState(false);
+  const [redigesting, setRedigesting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('Profile updated successfully');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -93,12 +99,31 @@ function Settings() {
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      setSnackbarMessage('Profile updated successfully');
       setSuccess(true);
     } catch (err) {
       console.error(err);
       alert('Failed to save profile');
     } finally {
       setSaveLoading(false);
+    }
+  };
+
+  const handleRedigest = async () => {
+    if (!window.confirm("This will erase and recalculate your entire vector database utilizing your active parameters. Proceed?")) return;
+    setRedigesting(true);
+    try {
+      const token = await getToken();
+      await axios.post('/api/documents/redigest', {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setSnackbarMessage('Re-digestion initiated successfully! Check Dashboard for chunking progress.');
+      setSuccess(true);
+    } catch(err) {
+      console.error(err);
+      alert('Failed to initiate re-digestion.');
+    } finally {
+      setRedigesting(false);
     }
   };
 
@@ -168,11 +193,11 @@ function Settings() {
                       RAG Engine Configuration
                     </Typography>
                     {formData.profession !== 'custom' && (
-                      <Chip 
-                        icon={<MagicIcon />} 
-                        label="Auto-Optimized" 
-                        size="small" 
-                        sx={{ fontWeight: 700, bgcolor: 'rgba(0, 230, 138, 0.12)', color: '#5be49b', '& .MuiChip-icon': { color: '#00e68a' } }} 
+                      <Chip
+                        icon={<MagicIcon />}
+                        label="Auto-Optimized"
+                        size="small"
+                        sx={{ fontWeight: 700, bgcolor: 'rgba(0, 230, 138, 0.12)', color: '#5be49b', '& .MuiChip-icon': { color: '#00e68a' } }}
                       />
                     )}
                   </Stack>
@@ -182,27 +207,48 @@ function Settings() {
                   </Alert>
 
                   {formData.profession === 'custom' ? (
-                    <Stack spacing={4} sx={{ px: 0.5 }}>
+                    <Stack spacing={5} sx={{ px: 0.5 }}>
                       <Box>
-                        <Stack direction="row" justifyContent="space-between" sx={{ mb: 1 }}>
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>Chunk Size</Typography>
-                          <Typography variant="caption" sx={{ fontWeight: 700, color: '#00e68a' }}>{formData.chunk_size} chars</Typography>
+                        <Stack direction="row" justifyContent="space-between" sx={{ mb: 1.5, display: "flex", alignItems: "center" }}>
+                          <Stack direction="row" alignItems="center">
+                            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>Chunk Size</Typography>
+                            <Tooltip title="The number of characters each document segment is split into. Smaller chunks give more precise results, larger chunks preserve more context." arrow placement="top">
+                              <IconButton size="small" sx={{ ml: '1rem', color: '#637381', '&:hover': { color: '#00e68a' } }}>
+                                <HelpIcon sx={{ fontSize: 16 }} />
+                              </IconButton>
+                            </Tooltip>
+                          </Stack>
+                          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#00e68a', mr: 1 }}>{formData.chunk_size} chars</Typography>
                         </Stack>
                         <Slider value={formData.chunk_size} onChange={(e, v) => setFormData({ ...formData, chunk_size: v })} {...BOUNDARIES.chunk_size} />
                       </Box>
 
                       <Box>
-                        <Stack direction="row" justifyContent="space-between" sx={{ mb: 1 }}>
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>Temperature</Typography>
-                          <Typography variant="caption" sx={{ fontWeight: 700, color: '#00e68a' }}>{formData.temperature}</Typography>
+                        <Stack direction="row" justifyContent="space-between" sx={{ mb: 1.5, display: "flex", alignItems: "center" }}>
+                          <Stack direction="row" alignItems="center">
+                            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>Temperature</Typography>
+                            <Tooltip title="Controls the randomness of AI responses. Lower values (0.1–0.3) produce focused, factual answers. Higher values (0.7–1.0) make responses more creative and varied." arrow placement="top">
+                              <IconButton size="small" sx={{ ml: '1rem', color: '#637381', '&:hover': { color: '#00e68a' } }}>
+                                <HelpIcon sx={{ fontSize: 16 }} />
+                              </IconButton>
+                            </Tooltip>
+                          </Stack>
+                          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#00e68a' }}>{formData.temperature}</Typography>
                         </Stack>
                         <Slider value={formData.temperature} onChange={(e, v) => setFormData({ ...formData, temperature: v })} {...BOUNDARIES.temperature} />
                       </Box>
 
                       <Box>
-                        <Stack direction="row" justifyContent="space-between" sx={{ mb: 1 }}>
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>Top K (Context)</Typography>
-                          <Typography variant="caption" sx={{ fontWeight: 700, color: '#00e68a' }}>{formData.top_k} sources</Typography>
+                        <Stack direction="row" justifyContent="space-between" sx={{ mb: 1.5, display: "flex", alignItems: "center" }}>
+                          <Stack direction="row" alignItems="center">
+                            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>Top K (Context)</Typography>
+                            <Tooltip title="The number of most relevant document chunks retrieved to answer each query. More sources provide broader context but may introduce noise." arrow placement="top">
+                              <IconButton size="small" sx={{ ml: '1rem', color: '#637381', '&:hover': { color: '#00e68a' } }}>
+                                <HelpIcon sx={{ fontSize: 16 }} />
+                              </IconButton>
+                            </Tooltip>
+                          </Stack>
+                          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#00e68a' }}>{formData.top_k} sources</Typography>
                         </Stack>
                         <Slider value={formData.top_k} onChange={(e, v) => setFormData({ ...formData, top_k: v })} {...BOUNDARIES.top_k} />
                       </Box>
@@ -217,16 +263,32 @@ function Settings() {
                   )}
                 </Paper>
 
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', pb: 4 }}>
+                <Box sx={{ display: 'flex', gap: 2, pb: 4 }}>
                   <Button
                     type="submit"
                     variant="contained"
                     size="large"
                     startIcon={saving ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
-                    disabled={saving}
+                    disabled={saving || redigesting}
                     sx={{ px: 5, py: 1.5, fontWeight: 700 }}
                   >
                     Save Changes
+                  </Button>
+                  <Button 
+                    type="button"
+                    variant="outlined" 
+                    size="large"
+                    startIcon={redigesting ? <CircularProgress size={20} color="inherit" /> : <SyncIcon />}
+                    disabled={saving || redigesting}
+                    onClick={handleRedigest}
+                    sx={{ 
+                      px: 4, 
+                      color: '#00e68a', 
+                      borderColor: 'rgba(0, 230, 138, 0.5)',
+                      '&:hover': { borderColor: '#00e68a', bgcolor: 'rgba(0, 230, 138, 0.08)' }
+                    }}
+                  >
+                    {redigesting ? 'Syncing...' : 'Re-digest Library'}
                   </Button>
                 </Box>
               </Stack>
@@ -239,7 +301,8 @@ function Settings() {
         open={success}
         autoHideDuration={4000}
         onClose={() => setSuccess(false)}
-        message="Profile updated successfully"
+        message={snackbarMessage}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       />
     </Box>
   );

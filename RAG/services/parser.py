@@ -3,6 +3,7 @@ from parsers.docx_parser import parse_docx
 from parsers.xlsx_parser import parse_xlsx
 from parsers.pptx_parser import parse_pptx
 from parsers.txt_parser import parse_txt
+from parsers.image_parser import parse_image
 
 def get_document_text(file_path, file_type):
     file_type = file_type.lower()
@@ -17,5 +18,7 @@ def get_document_text(file_path, file_type):
         return parse_pptx(file_path)
     elif file_type == 'txt':
         return parse_txt(file_path)
+    elif file_type in ['jpg', 'jpeg', 'png', 'webp']:
+        return parse_image(file_path)
     else:
         return ""
