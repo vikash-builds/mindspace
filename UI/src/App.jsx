@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, Link } from 'react-router-dom';
-import { SignedIn, SignedOut, SignUp, RedirectToSignIn, useAuth } from '@clerk/clerk-react';
+import { AuthenticateWithRedirectCallback, SignedIn, SignedOut, SignUp, RedirectToSignIn, useAuth } from '@clerk/clerk-react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Dashboard from './pages/Dashboard';
@@ -9,9 +9,11 @@ import Integrations from './pages/Integrations';
 import Reminders from './pages/Reminders';
 import Onboarding from './pages/Onboarding';
 import Settings from './pages/Settings';
+import DemoMode from './pages/DemoMode';
 import logo from './assets/logos/logo.png';
 import { Box, CircularProgress, Typography } from '@mui/material';
 import LoginForm from './components/auth/LoginForm';
+import { demoModeEnabled } from './demo/demoConfig';
 
 // Shared dark appearance config for all Clerk components
 const clerkAppearance = {
@@ -162,6 +164,17 @@ function App() {
           }
         />
         <Route
+          path="/sso-callback"
+          element={
+            <AuthenticateWithRedirectCallback
+              signInForceRedirectUrl="/"
+              signUpForceRedirectUrl="/onboarding"
+              signInFallbackRedirectUrl="/"
+              signUpFallbackRedirectUrl="/onboarding"
+            />
+          }
+        />
+        <Route
           path="/onboarding"
           element={
             <SignedIn>
@@ -223,8 +236,30 @@ function App() {
             </SignedIn>
           }
         />
+        {demoModeEnabled && (
+          <Route
+            path="/demo-mode"
+            element={
+              <SignedIn>
+                <EnsureProfile><DemoMode /></EnsureProfile>
+              </SignedIn>
+            }
+          />
+        )}
 
-        <Route path="*" element={<SignedOut><RedirectToSignIn /></SignedOut>} />
+        <Route
+          path="*"
+          element={
+            <>
+              <SignedIn>
+                <Navigate to="/" replace />
+              </SignedIn>
+              <SignedOut>
+                <RedirectToSignIn />
+              </SignedOut>
+            </>
+          }
+        />
       </Routes>
     </Router>
   );
