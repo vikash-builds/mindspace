@@ -1,10 +1,18 @@
 require('dotenv').config();
 const path = require('path');
 
+function isTruthy(value, fallback = false) {
+  if (value === undefined) {
+    return fallback;
+  }
+  return ['1', 'true', 'yes', 'on'].includes(String(value).toLowerCase());
+}
+
 module.exports = {
   PORT: process.env.PORT || 3000,
   CLERK_PUBLISHABLE_KEY: process.env.CLERK_PUBLISHABLE_KEY || process.env.VITE_CLERK_PUBLISHABLE_KEY,
   CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
+  ENABLE_CLERK_AUTH: isTruthy(process.env.ENABLE_CLERK_AUTH, true),
   DB_PATH: path.join(__dirname, 'mindspace.db'),
   UPLOAD_DIR: path.join(__dirname, 'storage/uploads'),
   CHAT_ATTACHMENT_DIR: path.join(__dirname, 'storage/chat_attachments'),

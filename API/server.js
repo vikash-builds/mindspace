@@ -8,12 +8,20 @@ const storageService = require('./services/storage.service');
 
 const app = express();
 
-app.use(clerkMiddleware({
-  publishableKey: config.CLERK_PUBLISHABLE_KEY,
-  secretKey: config.CLERK_SECRET_KEY,
-}));
 app.use(cors());
 app.use(express.json({ limit: '25mb' }));
+
+if (config.ENABLE_CLERK_AUTH) {
+  app.use(clerkMiddleware({
+    publishableKey: config.CLERK_PUBLISHABLE_KEY,
+    secretKey: config.CLERK_SECRET_KEY,
+  }));
+} else {
+  app.use((req, res, next) => {
+    req.auth = { userId: 'demo-user' };
+    next();
+  });
+}
 
 app.use('/api/profile', require('./routes/profile.routes'));
 app.use('/api/documents', require('./routes/documents.routes'));
@@ -26,6 +34,7 @@ app.get('/health', (req, res) => {
     status: 'ok',
     timestamp: new Date().toISOString(),
     deploymentMode: config.DEPLOYMENT_MODE,
+    clerkAuthEnabled: config.ENABLE_CLERK_AUTH,
   });
 });
 
