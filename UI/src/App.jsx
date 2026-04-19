@@ -145,11 +145,11 @@ function App() {
     <Router>
       <Routes>
         <Route
-          path="/login"
+          path="/login/*"
           element={<AuthPage><LoginForm /></AuthPage>}
         />
         <Route
-          path="/register"
+          path="/register/*"
           element={
             <AuthPage>
               <SignUp
