@@ -62,8 +62,18 @@ def parse_image(file_path):
             except Exception as vision_error:
                 print(f"Gemini vision parse failed, falling back to OCR: {vision_error}")
 
-        ocr_text = pytesseract.image_to_string(image).strip()
+        ocr_text = ''
+        try:
+            ocr_text = pytesseract.image_to_string(image).strip()
+        except Exception as ocr_error:
+            if vision_text:
+                print(f"Tesseract OCR unavailable or failed, using Gemini vision result only: {ocr_error}")
+            else:
+                raise ocr_error
+
         combined = '\n\n'.join(part for part in [vision_text, ocr_text] if part)
+        if not combined.strip():
+            raise Exception('No text could be extracted from image')
         return combined.strip()
     except Exception as e:
         print(f"Error parsing image {file_path}: {e}")
