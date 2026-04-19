@@ -175,6 +175,28 @@ function App() {
           }
         />
         <Route
+          path="/register/sso-callback"
+          element={
+            <AuthenticateWithRedirectCallback
+              signInForceRedirectUrl="/"
+              signUpForceRedirectUrl="/onboarding"
+              signInFallbackRedirectUrl="/"
+              signUpFallbackRedirectUrl="/onboarding"
+            />
+          }
+        />
+        <Route
+          path="/login/sso-callback"
+          element={
+            <AuthenticateWithRedirectCallback
+              signInForceRedirectUrl="/"
+              signUpForceRedirectUrl="/onboarding"
+              signInFallbackRedirectUrl="/"
+              signUpFallbackRedirectUrl="/onboarding"
+            />
+          }
+        />
+        <Route
           path="/onboarding"
           element={
             <SignedIn>
