@@ -60,6 +60,13 @@ async function ingestDocument(doc, profile, overrides = {}) {
   return result;
 }
 
+async function clearDocumentVectors(userId, docId) {
+  await Promise.allSettled([
+    ragBridge.deleteDocumentFromProvider(userId, docId, { vectorProvider: 'faiss' }),
+    ragBridge.deleteDocumentFromProvider(userId, docId, { vectorProvider: 'pinecone' }),
+  ]);
+}
+
 router.post('/upload', auth, upload.single('file'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No file uploaded' });
@@ -262,10 +269,7 @@ router.delete('/:id', auth, async (req, res) => {
       return res.status(404).json({ error: 'Document not found' });
     }
 
-    await ragBridge.deleteDocument(req.auth.userId, doc.id).catch(() => {});
-    if (doc.sync_status === 'synced' || doc.sync_status === 'syncing') {
-      await ragBridge.deleteDocumentFromProvider(req.auth.userId, doc.id, { vectorProvider: 'pinecone' }).catch(() => {});
-    }
+    await clearDocumentVectors(req.auth.userId, doc.id);
     await storageService.removeObject(doc.storage_bucket, doc.storage_object_path);
     await db.query('DELETE FROM documents WHERE id = $1', [doc.id]);
     res.json({ message: 'Document deleted successfully' });
@@ -286,7 +290,7 @@ router.post('/redigest', auth, async (req, res) => {
         SET chunk_count = 0, status = 'processing', error_message = NULL
         WHERE id = $1
       `, [doc.id]);
-      await ragBridge.deleteDocument(req.auth.userId, doc.id).catch(() => {});
+      await clearDocumentVectors(req.auth.userId, doc.id);
       ingestDocument(doc, profile).catch(async (error) => {
         await db.query(`
           UPDATE documents

@@ -77,5 +77,20 @@ def extract_actions():
 
     return jsonify(extract_action_candidates(text))
 
+
+@app.route('/extract-text', methods=['POST'])
+def extract_text():
+    data = request.json or {}
+    file_path = data.get('filePath')
+    file_type = data.get('fileType')
+
+    if not file_path or not file_type:
+        return jsonify({"error": "filePath and fileType are required"}), 400
+
+    text = get_document_text(file_path, file_type)
+    return jsonify({
+        "text": text or "",
+    })
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=config.PORT, debug=True)

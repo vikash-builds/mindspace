@@ -11,6 +11,7 @@ const { buildSearchRegex, detectActionIntent, findBestTaskReference } = require(
 
 const router = express.Router();
 const attachmentUpload = multer({ storage: multer.memoryStorage() });
+const SUPPORTED_ATTACHMENT_TYPES = new Set(['pdf', 'docx', 'doc', 'xlsx', 'xls', 'pptx', 'ppt', 'txt', 'jpg', 'jpeg', 'png', 'webp']);
 
 async function findOrCreateChecklist(userId, title) {
   const existing = await db.query(`
@@ -149,6 +150,56 @@ async function listReminderSummary(userId, { remind_at, history = false, entity 
   return result.rows
     .map((reminder, index) => `${index + 1}. ${reminder.title} — ${new Date(reminder.remind_at).toLocaleString()}${history ? ` (${reminder.status})` : ''}`)
     .join('\n');
+}
+
+function getAttachmentFileType(attachment = {}) {
+  const extension = path.extname(attachment.name || '').replace('.', '').toLowerCase();
+  if (extension) {
+    return extension;
+  }
+
+  const mimeType = (attachment.mimeType || '').toLowerCase();
+  if (mimeType.includes('pdf')) return 'pdf';
+  if (mimeType.includes('word') || mimeType.includes('document')) return 'docx';
+  if (mimeType.includes('sheet') || mimeType.includes('excel')) return 'xlsx';
+  if (mimeType.includes('presentation') || mimeType.includes('powerpoint')) return 'pptx';
+  if (mimeType.includes('text/plain')) return 'txt';
+  if (mimeType.includes('jpeg')) return 'jpeg';
+  if (mimeType.includes('jpg')) return 'jpg';
+  if (mimeType.includes('png')) return 'png';
+  if (mimeType.includes('webp')) return 'webp';
+  return '';
+}
+
+async function buildAttachmentContext(attachments = []) {
+  const supportedAttachments = attachments.filter((attachment) => {
+    const fileType = getAttachmentFileType(attachment);
+    return attachment?.url && SUPPORTED_ATTACHMENT_TYPES.has(fileType);
+  });
+
+  if (!supportedAttachments.length) {
+    return '';
+  }
+
+  const parsedAttachments = await Promise.allSettled(supportedAttachments.map(async (attachment) => {
+    const fileType = getAttachmentFileType(attachment);
+    const result = await ragBridge.extractText(attachment.url, fileType);
+    const text = (result?.text || '').replace(/\s+/g, ' ').trim();
+    if (!text) {
+      return null;
+    }
+
+    return [
+      `Attachment: ${attachment.name || 'Untitled file'}`,
+      `Type: ${fileType.toUpperCase()}`,
+      `Extracted Content: ${text.slice(0, 4000)}`,
+    ].join('\n');
+  }));
+
+  return parsedAttachments
+    .filter((item) => item.status === 'fulfilled' && item.value)
+    .map((item) => item.value)
+    .join('\n\n---\n\n');
 }
 
 async function createActionFromIntent(userId, intent, sourceMessageId) {
@@ -582,6 +633,10 @@ router.post('/', auth, async (req, res) => {
     }
 
     const actionIntent = detectActionIntent(question);
+    const attachmentContext = actionIntent ? '' : await buildAttachmentContext(attachments);
+    const effectiveQuestion = attachmentContext
+      ? `${question}\n\nAttached File Context:\n${attachmentContext}\n\nUse the attached file context when it is relevant to the user's request.`
+      : question;
     const ragResult = actionIntent
       ? await createActionFromIntent(userId, actionIntent, userMessageId)
       : await (async () => {
@@ -592,7 +647,7 @@ router.post('/', auth, async (req, res) => {
           `, [userId]);
           const profile = profileResult.rows[0] || {};
 
-          return ragBridge.query(userId, question, history, {
+          return ragBridge.query(userId, effectiveQuestion, history, {
             topK: profile.top_k,
             temperature: profile.temperature,
             similarityThreshold: profile.similarity_threshold,

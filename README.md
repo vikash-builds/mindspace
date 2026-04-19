@@ -10,6 +10,8 @@ MindSpace is an AI-powered knowledge and execution workspace that brings togethe
 
 It is designed to help users move from information to action, not just ask questions.
 
+For demo prep and hosted rollout, see [DEMO_DEPLOYMENT_PLAYBOOK.md](/Users/gmx/Documents/mindspace/DEMO_DEPLOYMENT_PLAYBOOK.md:1).
+
 ## What It Does
 
 MindSpace lets users:

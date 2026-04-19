@@ -24,11 +24,13 @@ import {
   Notifications as BellIcon,
   Settings as SettingsIcon,
   Hub as IntegrationsIcon,
+  Campaign as DemoIcon,
   Add as AddChatIcon,
   ChatBubble as ChatIcon,
   Timer as TempIcon,
   Delete as DeleteIcon
 } from '@mui/icons-material';
+import { demoModeEnabled } from '../demo/demoConfig';
 
 const drawerWidth = 280;
 
@@ -159,6 +161,10 @@ function Sidebar() {
     { label: 'Reminders', icon: <BellIcon />, path: '/reminders' },
     { label: 'Settings', icon: <SettingsIcon />, path: '/settings' },
   ];
+
+  if (demoModeEnabled) {
+    navItems.splice(1, 0, { label: 'Demo Mode', icon: <DemoIcon />, path: '/demo-mode' });
+  }
 
   return (
     <>

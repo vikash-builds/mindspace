@@ -273,9 +273,9 @@ function DocumentList({ documents, onDeleted, onSynced }) {
                       </IconButton>
                     </span>
                   </Tooltip>
-                  <Tooltip title="Sync to hosted vector DB">
+                  <Tooltip title={document.sync_status === 'synced' ? 'Re-sync hosted index' : 'Sync to hosted vector DB'}>
                     <span>
-                      <IconButton size="small" onClick={() => handleSyncHosted(document.id)} disabled={syncingIds.includes(document.id)} sx={{ color: '#637381', '&:hover': { color: '#00e68a', bgcolor: 'rgba(0, 230, 138, 0.08)' } }}>
+                      <IconButton size="small" onClick={() => handleSyncHosted(document.id)} disabled={syncingIds.includes(document.id) || document.status !== 'ready'} sx={{ color: '#637381', '&:hover': { color: '#00e68a', bgcolor: 'rgba(0, 230, 138, 0.08)' } }}>
                         <SyncIcon fontSize="small" />
                       </IconButton>
                     </span>

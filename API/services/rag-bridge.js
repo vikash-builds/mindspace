@@ -70,6 +70,19 @@ class RagBridge {
     }
   }
 
+  async extractText(filePath, fileType) {
+    try {
+      const response = await this.client.post('/extract-text', {
+        filePath,
+        fileType,
+      });
+      return response.data;
+    } catch (error) {
+      console.error('RAG Text Extraction error:', error.response?.data || error.message);
+      throw error;
+    }
+  }
+
   async checkHealth() {
     try {
       const response = await this.client.get('/health');

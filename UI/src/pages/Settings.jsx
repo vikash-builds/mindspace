@@ -349,7 +349,7 @@ function Settings() {
                   </Stack>
 
                   <Alert severity="info" icon={<InfoIcon />} sx={{ mb: 3 }}>
-                    <strong>Note:</strong> Changes to <em>Chunk Size</em> will only apply to <strong>new documents</strong> uploaded after this point. Existing documents will retain their current structure.
+                    <strong>Note:</strong> Changes to your retrieval settings apply immediately to new uploads. Use <strong>Re-digest Library</strong> below if you want existing documents reprocessed with the new configuration.
                   </Alert>
 
                   {formData.profession === 'custom' ? (

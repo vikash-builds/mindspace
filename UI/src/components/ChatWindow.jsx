@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@clerk/clerk-react';
 import axios from 'axios';
 import {
@@ -26,6 +26,7 @@ import MessageBubble from './MessageBubble';
 function ChatWindow() {
   const { chatId } = useParams();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { getToken } = useAuth();
   const [messages, setMessages] = useState([]);
   const [pinnedMessages, setPinnedMessages] = useState([]);
@@ -68,6 +69,18 @@ function ChatWindow() {
     fetchHistory();
     fetchPins();
   }, [chatId]);
+
+  useEffect(() => {
+    const prompt = searchParams.get('prompt');
+    if (!prompt) {
+      return;
+    }
+
+    setInput(prompt);
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('prompt');
+    setSearchParams(nextParams, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -210,7 +223,7 @@ function ChatWindow() {
             </Typography>
             <Typography variant="body1" sx={{ maxWidth: 400, color: '#919eab' }}>
               {chatId === 'temp'
-                ? 'Messages in this session are not saved to history. Ask anything privately.'
+                ? 'Messages in this session are not saved to history. Assistant actions can still update your workspace.'
                 : 'Ask about your documents, attach files, or turn imported content into action items.'}
             </Typography>
           </Box>
@@ -326,7 +339,7 @@ function ChatWindow() {
             fontSize: '0.625rem',
           }}
         >
-          AI-GENERATED RESPONSES · PLEASE VERIFY IMPORTANT INFORMATION
+          AI-GENERATED RESPONSES · ATTACHED FILES ARE USED AS LIVE CONTEXT · VERIFY IMPORTANT INFORMATION
         </Typography>
       </Box>
     </Box>

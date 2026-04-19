@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '@clerk/clerk-react';
 import {
+  Alert,
   Box,
   Button,
   Collapse,
@@ -21,6 +22,7 @@ import {
 import Sidebar from '../components/Sidebar';
 import FileUploader from '../components/FileUploader';
 import DocumentList from '../components/DocumentList';
+import { demoModeEnabled, getActiveDemoConfig } from '../demo/demoConfig';
 
 const initialFilters = {
   query: '',
@@ -34,6 +36,7 @@ const initialFilters = {
 
 function Documents() {
   const { getToken } = useAuth();
+  const demoConfig = getActiveDemoConfig();
   const [documents, setDocuments] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [showFilters, setShowFilters] = useState(true);
@@ -82,6 +85,11 @@ function Documents() {
 
         <Box sx={{ flex: 1, overflowY: 'auto', p: 3.5, bgcolor: '#161c24' }}>
           <Box sx={{ maxWidth: 1100, mx: 'auto' }}>
+            {demoModeEnabled && (
+              <Alert severity="info" sx={{ mb: 3 }}>
+                Demo mode is active. For the strongest HR walkthrough, upload files like: {demoConfig.targetFiles.slice(0, 3).join(', ')}.
+              </Alert>
+            )}
             <Collapse in={isUploading}>
               <Box sx={{ mb: 3 }}>
                 <FileUploader onUploadSuccess={() => {
