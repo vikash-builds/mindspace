@@ -1,5 +1,5 @@
 import { Box, Container, Typography, Button, Grid, Paper, AppBar, Toolbar, Stack, Chip } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { SignInButton, SignUpButton } from '@clerk/clerk-react';
 import logo from '../assets/logos/logo.png';
 import {
   ArrowForward as ArrowIcon,
@@ -49,12 +49,16 @@ function Landing() {
               </Typography>
             </Box>
             <Stack direction="row" spacing={1.5}>
-              <Button component={Link} to="/login" variant="text" sx={{ color: '#919eab', '&:hover': { color: '#fff', bgcolor: 'transparent' } }}>
-                Log In
-              </Button>
-              <Button component={Link} to="/register" variant="contained" sx={{ bgcolor: '#00e68a', color: '#161c24', '&:hover': { bgcolor: '#00ab66' } }}>
-                Launch Workspace
-              </Button>
+              <SignInButton mode="redirect">
+                <Button variant="text" sx={{ color: '#919eab', '&:hover': { color: '#fff', bgcolor: 'transparent' } }}>
+                  Log In
+                </Button>
+              </SignInButton>
+              <SignUpButton mode="redirect">
+                <Button variant="contained" sx={{ bgcolor: '#00e68a', color: '#161c24', '&:hover': { bgcolor: '#00ab66' } }}>
+                  Launch Workspace
+                </Button>
+              </SignUpButton>
             </Stack>
           </Toolbar>
         </Container>
@@ -86,12 +90,16 @@ function Landing() {
                   MindSpace combines grounded document chat, reminders, checklists, Google integrations, and action extraction so teams can move from buried information to visible execution in one place.
                 </Typography>
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
-                  <Button component={Link} to="/register" variant="contained" size="large" endIcon={<ArrowIcon />} sx={{ px: 4, py: 1.5, bgcolor: '#00e68a', color: '#161c24', '&:hover': { bgcolor: '#00ab66' } }}>
-                    Start Building
-                  </Button>
-                  <Button component={Link} to="/login" variant="outlined" size="large" sx={{ px: 4, py: 1.5 }}>
-                    Open Existing Workspace
-                  </Button>
+                  <SignUpButton mode="redirect">
+                    <Button variant="contained" size="large" endIcon={<ArrowIcon />} sx={{ px: 4, py: 1.5, bgcolor: '#00e68a', color: '#161c24', '&:hover': { bgcolor: '#00ab66' } }}>
+                      Start Building
+                    </Button>
+                  </SignUpButton>
+                  <SignInButton mode="redirect">
+                    <Button variant="outlined" size="large" sx={{ px: 4, py: 1.5 }}>
+                      Open Existing Workspace
+                    </Button>
+                  </SignInButton>
                 </Stack>
                 <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                   {demoHighlights.map((item) => (
