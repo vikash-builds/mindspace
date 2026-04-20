@@ -467,6 +467,54 @@ function parseTaskEditIntent(text) {
   };
 }
 
+function parseEmailDraftIntent(text) {
+  if (!/\b(draft|write|create|prepare)\b/i.test(text) || !/\b(email|mail|gmail draft|draft)\b/i.test(text)) {
+    return null;
+  }
+
+  const recipientMatch = text.match(/\bto\s+(.+?)(?=\s+\b(?:subject|about|body|message|saying|that says|with subject|with body)\b|$)/i);
+  const subjectMatch =
+    text.match(/\bsubject\s*[:\-]?\s*(.+?)(?=\s+\b(?:body|message|saying|that says|with body)\b|$)/i) ||
+    text.match(/\babout\s+(.+?)(?=\s+\b(?:body|message|saying|that says|with body)\b|$)/i);
+  const bodyMatch =
+    text.match(/\b(?:body|message|saying that|that says|saying|with body)\s+(.+)$/i);
+
+  const recipient = normalizeWhitespace(recipientMatch?.[1] || '').replace(/[.,]$/, '');
+  const subject = toSentenceCase(stripLeadingFiller(subjectMatch?.[1] || ''));
+  const body = normalizeWhitespace(bodyMatch?.[1] || '');
+
+  if (!recipient) {
+    return {
+      type: 'email_draft',
+      valid: false,
+      missing: 'recipient',
+    };
+  }
+
+  const generatedSubject = subject || 'MindSpace follow-up';
+  const generatedBody = body || (subject
+    ? `Hi,\n\nI'm reaching out regarding ${subject.charAt(0).toLowerCase()}${subject.slice(1)}.\n\nBest regards,`
+    : '');
+
+  if (!generatedBody) {
+    return {
+      type: 'email_draft',
+      valid: false,
+      missing: 'message/body',
+    };
+  }
+
+  return {
+    type: 'email_draft',
+    valid: true,
+    payload: {
+      recipient,
+      subject: generatedSubject,
+      body: generatedBody,
+    },
+  };
+}
+
 function parseChecklistCompletionIntent(text) {
   if (!/\b(mark|complete|finish|done)\b/i.test(text) || !/\bchecklist\b/i.test(text)) {
     return null;
@@ -523,6 +571,7 @@ function buildSearchRegex(query) {
 function detectActionIntent(text) {
   const normalized = normalizeWhitespace(text);
   return (
+    parseEmailDraftIntent(normalized) ||
     parseReminderListIntent(normalized) ||
     parseReminderSnoozeIntent(normalized) ||
     parseReminderDeleteIntent(normalized) ||

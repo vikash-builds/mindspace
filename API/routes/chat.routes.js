@@ -7,6 +7,7 @@ const config = require('../config');
 const db = require('../database');
 const ragBridge = require('../services/rag-bridge');
 const storageService = require('../services/storage.service');
+const { createGoogleDraftForUser } = require('../services/mail-draft.service');
 const { buildSearchRegex, detectActionIntent, findBestTaskReference } = require('../services/action-intent.service');
 
 const router = express.Router();
@@ -208,6 +209,35 @@ async function createActionFromIntent(userId, intent, sourceMessageId) {
       answer: `I can create that for you, but I still need the ${intent?.missing || 'details'}.`,
       sourceChunks: [],
     };
+  }
+
+  if (intent.type === 'email_draft') {
+    try {
+      const draft = await createGoogleDraftForUser(userId, {
+        recipient: intent.payload.recipient,
+        subject: intent.payload.subject,
+        body: intent.payload.body,
+        metadata: {
+          source: 'chat',
+          sourceMessageId,
+        },
+      });
+
+      return {
+        answer: `Gmail draft created for ${draft.recipient} with subject "${draft.subject}". You can see it in the saved drafts section.`,
+        sourceChunks: [],
+        action: { type: 'email_draft', id: draft.id, externalDraftId: draft.external_draft_id || null },
+      };
+    } catch (error) {
+      if (error.code === 'GOOGLE_NOT_CONNECTED') {
+        return {
+          answer: 'I can draft that, but your Google account is not connected yet. Connect Google in Integrations or Settings first, then try again.',
+          sourceChunks: [],
+        };
+      }
+
+      throw error;
+    }
   }
 
   if (intent.type === 'reminder') {

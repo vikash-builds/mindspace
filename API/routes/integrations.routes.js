@@ -7,6 +7,7 @@ const db = require('../database');
 const ragBridge = require('../services/rag-bridge');
 const storageService = require('../services/storage.service');
 const googleService = require('../services/google.service');
+const { getGoogleAccount, createGoogleDraftForUser } = require('../services/mail-draft.service');
 
 const router = express.Router();
 
@@ -17,14 +18,6 @@ function getErrorMessage(error, fallback) {
     error.message ||
     fallback
   );
-}
-
-async function getGoogleAccount(userId) {
-  const result = await db.query(
-    'SELECT * FROM integration_accounts WHERE user_id = $1 AND provider = $2',
-    [userId, 'google'],
-  );
-  return result.rows[0] || null;
 }
 
 router.get('/google/start', auth, async (req, res) => {
@@ -255,28 +248,11 @@ router.post('/google/gmail/drafts', auth, async (req, res) => {
   }
 
   try {
-    const account = await getGoogleAccount(req.auth.userId);
-    if (!account) {
-      return res.status(400).json({ error: 'Google is not connected' });
-    }
-
-    const draft = await googleService.createGmailDraft(account.tokens, { to: recipient, subject, body });
-    const result = await db.query(`
-      INSERT INTO mail_drafts (user_id, provider, external_draft_id, recipient, subject, body, status, metadata)
-      VALUES ($1, 'gmail', $2, $3, $4, $5, 'draft', $6::jsonb)
-      RETURNING id
-    `, [
-      req.auth.userId,
-      draft.id || null,
-      recipient,
-      subject,
-      body,
-      JSON.stringify(draft),
-    ]);
-
-    res.status(201).json({ id: result.rows[0].id, externalDraftId: draft.id || null });
+    const draft = await createGoogleDraftForUser(req.auth.userId, { recipient, subject, body });
+    res.status(201).json({ id: draft.id, externalDraftId: draft.external_draft_id || null });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    const statusCode = error.code === 'GOOGLE_NOT_CONNECTED' ? 400 : 500;
+    res.status(statusCode).json({ error: error.message });
   }
 });
 
