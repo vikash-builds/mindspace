@@ -236,7 +236,6 @@ function parseReminderIntent(text) {
     if (when.timeText) {
       title = title.replace(new RegExp(`\\b${escapeRegExp(when.timeText)}\\b`, 'gi'), '');
     }
-    title = normalizeWhitespace(title.replace(/\bat\b/gi, ''));
     title = toSentenceCase(title);
   }
 
