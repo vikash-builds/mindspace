@@ -32,7 +32,8 @@ function extractTime(text) {
   const minute = Number(match[2] || 0);
   const meridiem = (match[3] || '').toLowerCase();
 
-  if (meridiem && meridiem !== "o'clock" && meridiem !== 'oclock') {
+  const isOClock = meridiem === "o'clock" || meridiem === 'oclock';
+  if (meridiem && !isOClock) {
     if (meridiem.startsWith('p') && hour < 12) {
       hour += 12;
     }
@@ -41,7 +42,7 @@ function extractTime(text) {
     }
   }
 
-  if (!meridiem && hour <= 7) {
+  if ((!meridiem || isOClock) && hour <= 7) {
     hour += 12;
   }
 
@@ -182,6 +183,7 @@ function extractReminderTitle(text) {
     /\bthat\s+(.+)$/i,
     /\babout\s+(.+)$/i,
     /\bto\s+(.+)$/i,
+    /\bfor\s+(.+)$/i,
   ];
 
   for (const pattern of patterns) {
@@ -225,7 +227,19 @@ function parseReminderIntent(text) {
   }
 
   const when = buildReminderDate(text);
-  const title = extractReminderTitle(text);
+  let title = extractReminderTitle(text);
+
+  if (when && title) {
+    if (when.dateText) {
+      title = title.replace(new RegExp(`\\b${escapeRegExp(when.dateText)}\\b`, 'gi'), '');
+    }
+    if (when.timeText) {
+      title = title.replace(new RegExp(`\\b${escapeRegExp(when.timeText)}\\b`, 'gi'), '');
+    }
+    title = normalizeWhitespace(title.replace(/\bat\b/gi, ''));
+    title = toSentenceCase(title);
+  }
+
   if (!when || !title) {
     return {
       type: 'reminder',

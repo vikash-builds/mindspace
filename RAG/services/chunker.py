@@ -5,7 +5,11 @@ def chunk_text(text, chunk_size=None, chunk_overlap=None):
         chunk_size = config.CHUNK_SIZE
     if chunk_overlap is None:
         chunk_overlap = config.CHUNK_OVERLAP
-        
+
+    # Prevent infinite loops if overlap is >= size
+    if chunk_overlap >= chunk_size:
+        chunk_overlap = int(chunk_size * 0.1)
+
     if not text:
         return []
         

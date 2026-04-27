@@ -1,5 +1,7 @@
 import os
 import pickle
+import numpy as np
+import faiss
 
 import config
 
@@ -27,26 +29,25 @@ def _normalize_metadata(doc_id, texts, metadata=None):
 
 class LocalVectorStore:
     def __init__(self, user_id):
-        import faiss
-
-        self.faiss = faiss
         self.user_id = str(user_id)
         self.dimension = config.get_embedding_dimension('local')
         self.index_path = os.path.join(config.INDEX_DIR, f'{self.user_id}_{self.dimension}.index')
         self.map_path = os.path.join(config.MAP_DIR, f'{self.user_id}_{self.dimension}.pkl')
 
         if os.path.exists(self.index_path) and os.path.exists(self.map_path):
-            self.index = self.faiss.read_index(self.index_path)
+            self.index = faiss.read_index(self.index_path)
             with open(self.map_path, 'rb') as handle:
                 self.chunk_map = pickle.load(handle)
         else:
-            self.index = self.faiss.IndexFlatL2(self.dimension)
+            self.index = faiss.IndexFlatL2(self.dimension)
             self.chunk_map = []
 
     def add_chunks(self, doc_id, texts, embeddings, metadata=None):
-        import numpy as np
-
         records = _normalize_metadata(doc_id, texts, metadata)
+        # Store embeddings in chunk_map to allow rebuilding index without re-embedding
+        for i, record in enumerate(records):
+            record['embedding'] = embeddings[i]
+
         vectors = np.array(embeddings).astype('float32')
         self.index.add(vectors)
         self.chunk_map.extend(records)
@@ -54,8 +55,6 @@ class LocalVectorStore:
         return len(records)
 
     def search(self, query_embedding, k=5):
-        import numpy as np
-
         if not self.chunk_map:
             return []
 
@@ -81,28 +80,35 @@ class LocalVectorStore:
         return results
 
     def delete_document(self, doc_id):
-        import numpy as np
-
         doc_id = str(doc_id)
         remaining = [chunk for chunk in self.chunk_map if str(chunk.get('doc_id')) != doc_id]
         if len(remaining) == len(self.chunk_map):
             return False
 
         self.chunk_map = remaining
-        self.index = self.faiss.IndexFlatL2(self.dimension)
+        self.index = faiss.IndexFlatL2(self.dimension)
 
         if remaining:
-            from services.embeddings import embedding_service
-
-            texts = [chunk['text'] for chunk in remaining]
-            embeddings = embedding_service.embed_text(texts, provider='local')
-            self.index.add(np.array(embeddings).astype('float32'))
+            try:
+                # Use stored embeddings if available
+                embeddings = [chunk['embedding'] for chunk in remaining]
+                self.index.add(np.array(embeddings).astype('float32'))
+            except KeyError:
+                # Fallback for legacy records without stored embeddings
+                from services.embeddings import embedding_service
+                print(f"Legacy records found for user {self.user_id}, re-embedding remaining chunks...")
+                texts = [chunk['text'] for chunk in remaining]
+                embeddings = embedding_service.embed_text(texts, provider='local')
+                # Update remaining records with newly generated embeddings
+                for i, chunk in enumerate(remaining):
+                    chunk['embedding'] = embeddings[i]
+                self.index.add(np.array(embeddings).astype('float32'))
 
         self._save()
         return True
 
     def _save(self):
-        self.faiss.write_index(self.index, self.index_path)
+        faiss.write_index(self.index, self.index_path)
         with open(self.map_path, 'wb') as handle:
             pickle.dump(self.chunk_map, handle)
 
