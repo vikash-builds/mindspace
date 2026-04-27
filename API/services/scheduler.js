@@ -21,14 +21,19 @@ const startScheduler = () => {
       `, [now]);
 
       for (const reminder of result.rows) {
-        if (reminder.email_notify) {
-          await emailService.sendReminder(reminder.email, reminder.title, reminder.description);
-        }
-
+        // Update status first to prevent multiple emails if sendReminder or subsequent code fails/hangs
         await db.query(
           "UPDATE reminders SET status = 'fired', delivered_at = NOW(), updated_at = NOW() WHERE id = $1",
           [reminder.id],
         );
+
+        if (reminder.email_notify) {
+          try {
+            await emailService.sendReminder(reminder.email, reminder.title, reminder.description);
+          } catch (emailError) {
+            console.error(`Failed to send email for reminder ${reminder.id}:`, emailError);
+          }
+        }
 
         if (reminder.recurrence === 'daily') {
           const nextDate = new Date(reminder.remind_at);
